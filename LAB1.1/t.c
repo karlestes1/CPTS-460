@@ -2,12 +2,22 @@
 
 int prints(char *s)
 {
-    // write YOUR code
+    while(*s)
+    {
+        putc(*s);
+        s++;
+    }
 }
 
 int gets(char *s)
 {
-    // write YOUR code
+    while((*s = getc()) != '\r')
+    {
+        putc(*s);
+        (s++);
+        *s = 0;
+    } 
+    *(s++) = 0;
 }
 
 char ans[64];
