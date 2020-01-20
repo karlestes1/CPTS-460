@@ -1,7 +1,4 @@
-
-typedef unsigned char  u8;
-typedef unsigned short u16;
-typedef unsigned int   u32;
+#include <stdlib.h>
 
 struct ext2_inode {
 	u16	i_mode;		/* File mode */
