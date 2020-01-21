@@ -23,9 +23,8 @@ DIR *dp;
 u16 NSEC = 2;
 char buf1[BLK], buf2[BLK];
 u16 i, iblk;
-char *cp;
 char temp[64];
-u32 *up, iblk2;
+u32 *up;
 
 int prints(char *s)
 {
@@ -54,79 +53,73 @@ u16 getblk(u16 blk, char *buf)
   // readfd( blk/18, ((blk)%18)/9, ( ((blk)%18)%9)<<1, buf);
 }
 
-u16 search(INODE *ip, char *name)
+//Searches the current global INODE PTR for a specific file name
+//Returns a 1 if the things is found and a 0 otherwise
+u16 search(char *name)
 {
-  for (i = 0; i < 12; i++)
+  char *cp;
+
+  for (i = 0; i < 12; i++) //Assume DIR has at most 12 direct blocks
   {
-    getblk((u16)ip->i_block[i], buf2);
-    dp = (DIR *)buf2;
-    cp = buf2;
+    if(ip->i_block[i] == 0) //No data to read in
+      break;
 
-    if (!(ip->i_block[i]))
+    getblk((u16)ip->i_block[i], buf1);
+    dp = (DIR*)buf1;
+    cp = buf1;
+
+    while(cp < buf1 + BLK) //Loop through all entries in the directory
     {
-      // 4. print file names in the root directory /
-      while (cp < buf2 + BLK) //Loop through all entries in directory
+      //Copy over the name
+      strncpy(temp, dp->name, dp->name_len);
+      temp[dp->name_len] = 0;
+
+      if(!strcmp(temp, name))
       {
-        //Copy over name
-        strncpy(temp, dp->name, dp->name_len);
-        temp[dp->name_len] = '\0';
-
-        //Check if name of file matches search paramter
-        if(strcmp(temp, name) == 0) //Found a match
-        {
-          return (u16)dp->inode - 1;
-        }
-
-        //Move to next record
-        cp += dp->rec_len;
-        dp = (DIR *)cp;
-        memset(temp, 0, 64);
+        i = dp->inode;
+        getblk(((i-1)/8 + iblk), buf1);
+        ip = (INODE*)buf1 + ((i-1)%8);
+        return 1;
       }
+
+      //Move to next record
+      cp += dp->rec_len;
+      dp = (DIR *)cp;
+      memset(temp, 0, 64);
     }
-  } 
-
-  return -1;
+  }
+  return 0; 
 }
 
-getInode()
-{
-  getblk((i/8) + iblk, buf1);
-  ip = ((INODE*)buf1 + (i%8));
-}
+
 
 main()
 {
 
-  // 1. Write YOUR C code to get the INODE of /boot/mtx
-
-  //Get the root inode
+  //Get block where inodes start
   getblk((u16)2, buf1);
-  gp = (GD *)buf1; //Cast to group descriptor
-  iblk = (u16)(gp->bg_inode_table);
-  getblk(iblk, buf1); //Read in the first inode block
-  ip = (INODE *)buf1 + 1; //ip points to the first inode
+  iblk = (((GD *)buf1)->bg_inode_table);
+  getblk((u16)iblk, buf1);
 
-  //Search for boot
-  i = search(ip, "boot");
+  //Get root inode
+  ip = (INODE *)buf1 + 1;
 
-  if(i == -1) error();
+  // 1. Write YOUR C code to get the INODE of /boot/mtx
+  //Look for boot
 
-  getInode();
+  if(!search("boot"))
+    error();
 
-  i = search(ip, "mtx");
+  if(!search("mtx"))
+    error();
 
-  if(i == -1) error();
-  
+  prints("Found /boot/mtx\n\r");
+
   //if INODE has indirect blocks: get i_block[12] int buf2[  ]
-  getInode();
-  i = ip->i_block[12];
-  getblk(i, buf2);
-  iblk2 = buf2;
+  getblk((u16)ip->i_block[12], buf2);
 
   // 2. setes(0x1000); // MTX loading segment = 0x1000
   setes(0x1000);
-
-
 
   // 3. load 12 DIRECT blocks of INODE into memory
   for (i = 0; i < 12; i++)
@@ -135,8 +128,9 @@ main()
     putc('*');
     inces();
   }
+  prints("\n\r");
 
-  // // 4. load INDIRECT blocks, if any, into memory
+  // 4. load INDIRECT blocks, if any, into memory
   if (ip->i_block[12])
   {
     up = (u32 *)buf2;
@@ -148,6 +142,6 @@ main()
       up++;
     }
   }
-  prints("go?");
+  prints("\n\rgo?");
   getc();
 }
