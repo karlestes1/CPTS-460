@@ -105,7 +105,7 @@ main()
   ip = (INODE *)buf1 + 1;
 
   // 1. Write YOUR C code to get the INODE of /boot/mtx
-  //Look for boot
+  //Look for /boot/mtx
 
   if(!search("boot"))
     error();
@@ -124,22 +124,22 @@ main()
   // 3. load 12 DIRECT blocks of INODE into memory
   for (i = 0; i < 12; i++)
   {
-    getblk((u16)ip->i_block[i], 0);
+    getblk((u16)ip->i_block[i], 0); //Read in the block
     putc('*');
-    inces();
+    inces(); //Increment the ES Register
   }
   prints("\n\r");
 
   // 4. load INDIRECT blocks, if any, into memory
   if (ip->i_block[12])
   {
-    up = (u32 *)buf2;
-    while (*up)
+    up = (u32 *)buf2; //Start at beginning of indirect block list
+    while (*up) //Loop only while there are blocks to read in
     {
-      getblk((u16)*up, 0);
+      getblk((u16)*up, 0); //Get the block of data
       putc('.');
-      inces();
-      up++;
+      inces(); //Increment the ES Register
+      (u16)up++; //Move to next block
     }
   }
   prints("\n\rgo?");
