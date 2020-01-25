@@ -40,7 +40,7 @@ int sum;
 
 char *tab = "0123456789ABCDEF";
 
-//#include "string.c"
+#include "string.c"
 #include "uart.c"
 
 UART *up;

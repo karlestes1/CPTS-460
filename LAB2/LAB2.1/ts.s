@@ -14,8 +14,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
 
-	.global start
+        .global start
 start:
-         LDR sp, =stack_top
-         BL main
-         B .
+        LDR sp, =stack_top
+        BL main 
+        B .
