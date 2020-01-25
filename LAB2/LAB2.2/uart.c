@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RXFE 0x10
 #define TXFF 0x20
 
+char *tab = "0123456789ABCDEF";
+
 typedef struct uart{
   char *base;
   int n;
@@ -65,4 +67,66 @@ int uprints(UART *up, char *s)
     uputc(up, *s++);
 }
 
+//Taken from 360 Lab 1
+void myrpu(UART *up, u32 x, int BASE) {
+  char c;
+  if(x) {
+    c = tab[x % BASE];
+    myrpu(up, x/BASE, BASE);
+    uputc(up, c);
+  }
+}
+
 /** WRITE YOUR uprintf(UART *up, char *fmt, . . .) for formatted print **/
+int uprintf(UART *up, char *fmt, ...)
+{
+  //Most of this code was taken from my personal 360 LAB 1 code
+  int* ip = &fmt;
+  int x;
+  ip++;
+
+  for(char*cp = fmt; *cp != '\0'; cp++)
+  {
+    if(*cp == '%') //Chracter to format
+    {
+      cp++;
+      switch(*cp)
+      {
+        case 'c':
+          uputc(up,*ip);
+          break;
+
+        case 's':
+          uprints(up, *ip);
+          break;
+
+        case 'd':
+          x = *ip;
+          if(x < 0) {
+            x = (~x) + 0b1;
+            uputc(up, '-');
+          }
+          (x==0)? uputc(up, '0') : myrpu(up, x, 10);
+          uputc(up, ' ');
+          break;
+
+        case 'x':
+          x = *ip;
+          uprints(up, "0x");
+          (x == 0) ? uputc(up, '0') : myrpu(up, x, 16);
+          uputc(up, ' ');
+          break;
+      }
+      ip++;
+    }
+    else if(*cp == '\n')
+    {
+      uputc(up, '\n');
+      uputc(up, '\r');
+    }
+    else
+    {
+      uputc(up, *cp);
+    } 
+  } 
+}

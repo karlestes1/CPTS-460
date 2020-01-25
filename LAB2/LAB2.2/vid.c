@@ -32,6 +32,8 @@ etc
 
 extern int color;  // define this in your t.c file
 extern char *tab;  // define this in your t.c file: char *tab = "0123456789ABCDEF";
+extern int SIZE; // defined in t.c
+extern UART* up;
 
 
 u8 cursor;
@@ -40,7 +42,7 @@ unsigned char *font;
 int row, col, scrow_row = 4;
 int WIDTH = 640;
 
-extern uprintf(char *fmt, ...);  // write this in YOUR uart.c file
+extern uprintf(UART *up, char *fmt, ...);  // write this in YOUR uart.c file
 
 int fbuf_init()
 {
@@ -348,6 +350,7 @@ int show_bmp(char *p, int startRow, int startCol)
    int h, w, pixel, r1, r2, i, j; 
    unsigned char r, g, b;
    char *pp;
+   //UART *up = &uart[0];
  
    int *q = (int *)(p+14); // skip over 14 bytes file header 
    q++;                    // skip 4 bytes in image header
@@ -367,10 +370,10 @@ int show_bmp(char *p, int startRow, int startCol)
      for (j=startCol; j<startCol+w; j+=1){
          b = *pp; g = *(pp+1); r = *(pp+2);
          pixel = (b<<16) + (g<<8) + r;
-	 fb[i*640 + j] = pixel;
+	 fb[(i/SIZE)*640 + (j/SIZE)] = pixel;
          pp += 3;    // back pp by 3 bytes
      }
      p -= r2;
    }
-   uprintf("\nBMP image height=%d width=%d\n", h, w);
+   uprintf(up, "\nBMP image height=%d width=%d\n", h, w);
 }
