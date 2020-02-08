@@ -7,6 +7,8 @@
 #define KCLK  0x0C // clock divisor register;    (not used)
 #define KISTA 0x10 // interrupt status register;(not used)
 
+extern int kprintf(char *fmt,...);
+
 typedef volatile struct kbd
 {                               // base = 0x10006000
     char *base;                 // base address of KBD, as char *
@@ -44,7 +46,7 @@ void kbd_handler()
     c = unsh[scode];
     // map scan code to ASCII
     if (c != '\r')
-        printf("kbd interrupt: c=%x %c\n", c, c);
+        kprintf("kbd interrupt: c=%x %c\n", c, c);
     kp->buf[kp->head++] = c;
     kp->head %= 128; // enter key into CIRCULAR buf[ ]
     kp->data++;

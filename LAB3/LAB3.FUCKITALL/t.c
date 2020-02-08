@@ -5,6 +5,7 @@ void timer_handler();
 #include "kbd.c"
 //#include <stdint.h>
 #include "timer.c"
+#include "string.c"
 
 int color;  // define this in your t.c file
 UART *up;
@@ -66,12 +67,12 @@ void copy_vectors()
         timer_start(0); // start timer03.5 Keyboard Driver
         kbd_init();
             // initialize keyboard driver
-            printf("C3.2 start: test KBD and TIMER drivers\n");
+            kprintf("C3.2 start: test KBD and TIMER drivers\n");
         while (1)
         {
             color = CYAN;
-            printf("Enter a line from KBD\n");
+            kprintf("Enter a line from KBD\n");
             kgets(line);
-            printf("line = %s\n", line);
+            kprintf("line = %s\n", line);
         }
     }

@@ -27,7 +27,7 @@ void timer_init()
 {
     int i;
     TIMER *tp;
-    printf("timer_init()\n");
+    kprintf("timer_init()\n");
     for (i = 0; i < 4; i++)
     {
         tp = &timer[i];
