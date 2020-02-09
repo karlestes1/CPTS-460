@@ -39,6 +39,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KCLK  0x0C
 #define KISTA 0x10
 
+#define CCODE 0x21
+#define DCODE 0x23
+
+
 typedef volatile struct kbd{
   char *base;
   char buf[128];
@@ -53,8 +57,9 @@ int control = 0;
 volatile int keyset;
 int kbd_init()
 {
+  
   char scode;
-  keyset = 1; // default to scan code set-1
+  keyset = 2; // default to scan code set-1
   
   KBD *kp = &kbd;
   kp->base = (char *)0x10006000;
@@ -65,6 +70,7 @@ int kbd_init()
   shifted = 0;
   release = 0;
   control = 0;
+
 
   printf("Detect KBD scan code: press the ENTER key : ");
   while( (*(kp->base + KSTAT) & 0x10) == 0);
@@ -103,19 +109,70 @@ void kbd_handler2()
   KBD *kp = &kbd;
   //color = YELLOW;
   scode = *(kp->base + KDATA);
+  
+  //printf(" /%d/%d/%d/%d/ ", lshiftPressed, lctrlPressed, rshiftPressed, rctrlPressed);
 
+  
   if (scode == 0xF0){ // key release 
     release = 1;
     return;
   }
   
+  //Handle key releases
   if (release){
+    
     release = 0;
+    
+    if(scode == LSHIFT)
+      shifted = 0;
+    else if(scode == LCTRL)
+      control = 0;
+      
+    
     return;
   }
+  
+  
+  // Handle key presses
+  if (scode == LSHIFT) //Handle left shift down
+  {
+    shifted = 1;
+    return;
+  }
+  if (scode == LCTRL)
+  {
+    control = 1;
+    return;
+  }
+  
+  //Handle Control Codes
+  if(control)
+  {
+    if(scode == CCODE)
+    {
+      printf("Control-C Pressed");
+      scode = ENTER;
+    }
+    else if (scode == DCODE)
+    {
+      printf("Control-D Pressed");
+      scode = ENTER;
+    }
+  }
 
-  c = ltab[scode];
+  
+  
+  
+  //Then handle lowercase vs upercase
+  if(!shifted)
+    c = ltab[scode];
+  else
+  {
+    c = utab[scode];
+  }
+  
   printf("%c", c);
+  //printf(" code=%x ", scode);
 
   kp->buf[kp->head++] = c;
   kp->head %= 128;
