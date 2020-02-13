@@ -159,6 +159,7 @@ void kbd_handler2()
     {
       printf("Control-D Pressed");
       scode = ENTER;
+      //CAN"T FIGURE OUT EOF
     }
   }
 

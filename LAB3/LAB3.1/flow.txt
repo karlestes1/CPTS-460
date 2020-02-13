@@ -1,0 +1,6 @@
+In (6) when program starts  -- Reason: Program starts at main
+From (6) ==> (5) -- Reason: kgetc() is called
+In (5) while hasData == 0 ==> (1) -- Reason: Interrupt occurs
+From (1) ==> (2) -- Reason: Address of irq_handler is loaded
+From (2) ==> (3) -- Reason: irq_handler assemble code calls IRQ_handler c-code
+From (3) ==> (4) -- Reason: kbd_handler() is called from IRQ_handler()
