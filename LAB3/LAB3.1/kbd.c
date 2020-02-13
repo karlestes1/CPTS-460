@@ -53,6 +53,7 @@ volatile KBD kbd;
 int shifted = 0;
 int release = 0;
 int control = 0;
+int eof = 0;
 
 volatile int keyset;
 int kbd_init()
@@ -70,6 +71,7 @@ int kbd_init()
   shifted = 0;
   release = 0;
   control = 0;
+  eof = 0;
 
 
   printf("Detect KBD scan code: press the ENTER key : ");
@@ -166,10 +168,15 @@ void kbd_handler2()
   //Then handle lowercase vs upercase
   if(!shifted)
     c = ltab[scode];
-  else
+  else if (shifted)
   {
     c = utab[scode];
   }
+  // else
+  // {
+  //   c = 0x4;
+  // }
+  
   
   printf("%c", c);
   //printf(" code=%x ", scode);
