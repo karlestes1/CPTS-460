@@ -1,15 +1,15 @@
-# 1. What does the following statement do?___________________________________ Assenmbles the ts.s to ts.o
+# 1. What does the following statement do? ==> Assembles the ts.s to ts.o
 arm-none-eabi-as -mcpu=arm926ej-s -g ts.s -o ts.o
 
 # -L /usr/lib/gcc/arm-none-eabi/6.3.1/libgcc.a -lgcc
 
-# 2. What does the following statement do?___________________________________ Assembles the t.c and links it to to
+# 2. What does the following statement do? ==> Assembles the t.c and links it to to
 arm-none-eabi-gcc -c -mcpu=arm926ej-s -g t.c -o t.o 
 
-# 3. What does the following statement do?___________________________________ Links ts.o to t.elf file
+# 3. What does the following statement do? ==> Links ts.o to t.elf file
 arm-none-eabi-ld -T t.ld ts.o t.o /usr/lib/gcc/arm-none-eabi/6.3.1/libgcc.a -o t.elf
 
-# 4. What does the following statement do?___________________________________ Creates an executable binary from the object code
+# 4. What does the following statement do? ==> Creates an executable binary from the object code
 arm-none-eabi-objcopy -O binary t.elf t.bin 
 
 rm *.o *.elf
