@@ -58,7 +58,12 @@ int read_pipe(PIPE *p, char *buf, int n)
 {
   int r = 0;
 
-  while(n){
+  while(1){
+    if(p->nwriter == 0)
+    {
+      printf("pipe no-writer -- no more writers\n");
+      return 0;
+    }
     while(p->data){
       *buf = p->buf[p->tail++];
       p->tail %= PSIZE;
@@ -80,8 +85,15 @@ int write_pipe(PIPE *p, char *buf, int n)
 {
   int r = 0; int w = 0;
     
-  while(n){
+    
+  while(1){
     w = 0;
+    
+    if(!(p->nreader)) //No readers for pip so it's broken
+    {
+      printf("pipe broken -- no more readers\n");
+      kexit();
+    }
     while (p->room){
       p->buf[p->head++] = *buf;
       p->head %= PSIZE;
