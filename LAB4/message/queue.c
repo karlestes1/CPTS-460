@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
 
 // queue.c file
+extern int kprintf(char *fmt,...);
 
 PROC *getproc(PROC **list)
 {

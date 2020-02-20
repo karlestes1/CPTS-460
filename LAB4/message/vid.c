@@ -290,7 +290,7 @@ int kprintu(int x)
   else
     krpu(x);
   kputc(' ');
-}
+}  
 
 int kprinti(int x)
 {
