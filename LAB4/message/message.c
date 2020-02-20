@@ -5,9 +5,15 @@
 #define NMBUF 10
 struct semaphore nmbuf, mlock;
 MBUF mbuf[NMBUF], *mbufList; // mbufs buffers and mbufList
+extern PROC *running;
 
 //nmbuf = NMBUF; // number of free mbufs
 //struct semaphore PROC.nmsg = 0; // for proc to wait for messages
+
+int checkPid()
+{
+    return running->pid;
+}
 
 int menqueue(MBUF **queue, MBUF *p)
 { // enter p into queue by priority
