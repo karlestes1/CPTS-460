@@ -124,6 +124,8 @@ int kfork(int (*func)(), int priority)
   p->parent = running;
   p->status = READY;
   p->priority = priority;
+  p->nmsg.queue = 0;
+  p->nmsg.value = 0;  
 
   // set kstack to resume to body
   // stack = r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r14
