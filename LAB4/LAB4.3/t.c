@@ -112,6 +112,7 @@ int main()
   msg_init();
   kprintf("P0 kfork tasks\n");
   kfork((int)sender, 1);   // sender process
+  tswitch();
   kfork((int)receiver, 1); // receiver process
   while (1)
   {
