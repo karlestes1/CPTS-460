@@ -5,7 +5,7 @@ PROC proc[NPROC], *running, *freeList, *readyQueue;
 PROC *sleepList;
 int procsize = sizeof(PROC);
 int body();
-char *status[] = {"FREE", "READY", "SLEEP", "ZOMBIE"};
+char *status[] = {"FREE", "READY", "SLEEP", "BLOCK", "ZOMBIE"};
 
 int init()
 {
@@ -36,7 +36,9 @@ int init()
 
 int kfork(int func, int priority)
 {
+  printf("\n\n***RUNNING KFORK***\n");
   int i;
+  PROC *pCur = 0;
   PROC *p = dequeue(&freeList);
   if (p == 0)
   {
@@ -46,7 +48,25 @@ int kfork(int func, int priority)
   p->status = READY;
   p->priority = priority;
   p->ppid = running->pid;
+
+  /*** Copied from my CPTS 360 Prelab 3 ***/
+  //Add new proc as child of running proc
+  if (running->child == 0)
+    running->child = p;
+  else
+  {
+    pCur = running->child;
+
+    while (pCur->sibling != 0)
+      pCur = pCur->sibling;
+
+    pCur->sibling = p;
+  }
+
   p->parent = running;
+  p->child = 0;
+  p->sibling = 0;
+  /*** END COPY ***/
 
   // set kstack for new proc to resume to func()
   // stack = r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r14
@@ -78,6 +98,7 @@ int scheduler()
 // Copied from my own CPTS 360 Prelab 3
 int ps()
 {
+  printf("\n\n***RUNNING PS***\n");
   int i;
   PROC *p;
   printf("\nPID  PPID  status\n");
@@ -93,6 +114,30 @@ int ps()
   }
 }
 
+// Copied from my own CPTS 360 Prelab 3
+int resurrect()
+{
+  printf("\n\n***RUNNING RESURRECT***\n");
+  int i;
+  int alived = 0;
+  PROC *p;
+  kprintf("\nYour study of necormancy has paid off...\n");
+  for (i = 1; i < NPROC; i++)
+  {
+    p = &proc[i];
+    if (p->status == ZOMBIE)
+    {
+      alived = 1;
+      p->status = READY;
+      enqueue(&readyQueue, p);
+      kprintf("raised a ZOMBIE %d to live again\n", p->pid);
+    }
+  }
+  if (!alived)
+    kprintf("Unfortunately, there are no undead in sight\n");
+  //printList("readyQueue", readyQueue);
+}
+
 int body()
 {
   char c, cmd[64];
@@ -102,11 +147,22 @@ int body()
   {
     printf("-------- proc %d running -----------\n", running->pid);
 
+    printf("parent proc=%d\n",running->ppid);
+
+    //Print the children of the current running process
+    printf("Children of proc %d: ", running->pid);
+
+    for(PROC* pCur = running->child; pCur != 0; pCur = pCur->sibling)
+    {
+      printf("%d, ", pCur->pid);
+    }
+    printf("\n");
+
     printList("freeList  ", freeList);
     printList("readyQueue", readyQueue);
     printsleepList(sleepList);
 
-    printf("Enter a command [ps|switch|kfork|ksleep|kwakeup|exit] : ",
+    printf("Enter a command [ps|switch|fork|sleep|wakeup|wait|resurrect|exit] : ",
            running->pid);
     kgets(cmd);
 
@@ -114,13 +170,17 @@ int body()
       ps();
     else if (strcmp(cmd, "switch") == 0)
       tswitch();
-    else if (strcmp(cmd, "kfork") == 0)
+    else if (strcmp(cmd, "fork") == 0)
       kfork((int)body, 1);
-    else if (strcmp(cmd, "exit") == 0)
-      kexit();
-    else if (strcmp(cmd, "ksleep") == 0)
+    else if (strcmp(cmd, "sleep") == 0)
       do_sleep();
-    else if (strcmp(cmd, "kwakeup") == 0)
+    else if (strcmp(cmd, "wakeup") == 0)
       do_wakeup();
+    else if (strcmp(cmd, "wait") == 0)
+      do_wait();
+    else if (strcmp(cmd, "resurrect") == 0)
+      resurrect();
+    else if (strcmp(cmd, "exit") == 0)
+      kexit(1);
   }
 }
