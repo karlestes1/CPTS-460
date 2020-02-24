@@ -43,6 +43,7 @@ typedef struct proc{
   int    status;
   int    event;
   int    exitCode;
+  int    pause;
 
   struct proc *parent;
   struct proc *child;
