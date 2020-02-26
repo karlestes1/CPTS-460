@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "keymap"
 #include "keymap2"
-#include "type.h"
 
 #define LSHIFT 0x12
 #define RSHIFT 0x59
@@ -40,8 +39,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KCLK  0x0C
 #define KISTA 0x10
 
-#define CCODE 0x21
-#define DCODE 0x23
+int lshift_down = 0;
+
+extern int unlock();
+extern int lock();
 
 
 typedef volatile struct kbd{
@@ -54,12 +55,10 @@ volatile KBD kbd;
 int shifted = 0;
 int release = 0;
 int control = 0;
-int eof = 0;
 
 volatile int keyset;
 int kbd_init()
 {
-  
   char scode;
   keyset = 2; // default to scan code set-1
   
@@ -72,8 +71,6 @@ int kbd_init()
   shifted = 0;
   release = 0;
   control = 0;
-  eof = 0;
-
 
   printf("Detect KBD scan code: press the ENTER key : ");
   while( (*(kp->base + KSTAT) & 0x10) == 0);
@@ -113,75 +110,50 @@ void kbd_handler2()
   //color = YELLOW;
   scode = *(kp->base + KDATA);
   
-  //printf(" /%d/%d/%d/%d/ ", lshiftPressed, lctrlPressed, rshiftPressed, rctrlPressed);
 
-  
   if (scode == 0xF0){ // key release 
     release = 1;
+
     return;
   }
   
-  //Handle key releases
+  if(scode == LSHIFT){
+    lshift_down = 1;
+  }
+  if(scode == LCTRL){
+    control = 1;
+  }
+  
   if (release){
-    
     release = 0;
     
-    if(scode == LSHIFT)
-      shifted = 0;
-    else if(scode == LCTRL)
+    if(scode == LSHIFT){
+      lshift_down = 0;
+    }
+    if(scode == LCTRL){
       control = 0;
-      
-    
-    return;
-  }
-  
-  
-  // Handle key presses
-  if (scode == LSHIFT) //Handle left shift down
-  {
-    shifted = 1;
-    return;
-  }
-  if (scode == LCTRL)
-  {
-    control = 1;
-    return;
-  }
-  
-  //Handle Control Codes
-  if(control)
-  {
-    if(scode == CCODE)
-    {
-      printf("Control-C Pressed");
-      scode = ENTER;
     }
-    else if (scode == DCODE)
-    {
-      printf("Control-D Pressed");
-      scode = ENTER;
-      //CAN"T FIGURE OUT EOF
-    }
+
+    return;
   }
 
-  
-  
-  
-  //Then handle lowercase vs upercase
-  if(!shifted)
-    c = ltab[scode];
-  else if (shifted)
-  {
+  if(lshift_down){
     c = utab[scode];
   }
-  // else
-  // {
-  //   c = 0x4;
-  // }
+  else{
+    c = ltab[scode];
+  }
   
+  if(control && scode == 0x23){
+    printf("Control D Pressed\n");
+    c = 0x04;
+  }
+  if(control && scode == 0x21){
+    printf("Control C Pressed\n");
+    c = 0x03;
+  }
   
   printf("%c", c);
-  //printf(" code=%x ", scode);
 
   kp->buf[kp->head++] = c;
   kp->head %= 128;

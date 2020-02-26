@@ -1,11 +1,3 @@
-// Timer file for PART 2 of the CPTS 460 take home midterm
-// Basic structure for a majority of this code was taken from
-//"Embedded and Real-TIme Operating Systems" by K.C. Wang
-
-#include "type.h"
-#include "vid.c"
-#include "kernel.c"
-
 // timer register u32 offsets from base address
 #define TLOAD 0x0
 #define TVALUE 0x1
@@ -13,25 +5,42 @@
 #define TINTCLR 0x3
 #define TRIS 0x4
 #define TMIS 0x5
-#define TBGLOAD 0x6
+#define TBGLOAD 0x660 //3 Interrupts and Exceptions Processing typedef volatile struct
 
-PROC *pauseList; // a list of pausing processes
+//#include "vid.c"
 
-typedef struct timer
+typedef unsigned int u32;
+
+PROC* pauseList;
+
+extern int color; // define this in your t.c file
+extern char *tab; // define this in your t.c file: char *tab = "0123456789ABCDEF";
+
+void memcpy(void *dest, void *src, int n)
 {
-    u32 *base;            // timer's base address;
+    // Typecast src and dest addresses to (char *)
+    char *csrc = (char *)src;
+    char *cdest = (char *)dest;
+
+    // Copy contents of src[] to dest[]
+    for (int i = 0; i < n; i++)
+        cdest[i] = csrc[i];
+}
+
+typedef volatile struct timer
+{
+    u32 *base;
+    // timer's base address; as u32 pointer
     int tick, hh, mm, ss; // per timer data area
     char clock[16];
 } TIMER;
+volatile TIMER timer[4]; //4 timers; 2 per unit; at 0x00 and 0x20
 
-TIMER timer[4]; // 4 timers;
-
-//Intialization of the timers
 void timer_init()
 {
     int i;
     TIMER *tp;
-    printf("timer_init()\n");
+    kprintf("timer_init()\n");
     for (i = 0; i < 4; i++)
     {
         tp = &timer[i];
@@ -57,6 +66,12 @@ void timer_init()
     }
 }
 
+int timer_clearInterrupt(int n) // timer_start(0), 1, etc.
+{
+    TIMER *tp = &timer[n];
+    *(tp->base + TINTCLR) = 0xFFFFFFFF;
+}
+
 void timer_handler(int n) // n=timer unit
 {
     int i;
@@ -71,57 +86,49 @@ void timer_handler(int n) // n=timer unit
         {
             t->mm = 0;
             t->hh++;
-        }
-    }
 
-    if (n == 0) // timer0: display wall-clock directly
-    {
-        for (i = 0; i < 8; i++) // clear old clock area
-            unkpchar(t->clock[i], n, 70 + i);
-
-        t->clock[7] = '0' + (t->ss % 10);
-        t->clock[6] = '0' + (t->ss / 10);
-        t->clock[4] = '0' + (t->mm % 10);
-        t->clock[3] = '0' + (t->mm / 10);
-        t->clock[1] = '0' + (t->hh % 10);
-        t->clock[0] = '0' + (t->hh / 10);
-
-        for (i = 0; i < 8; i++) // display new wall clock
-            kpchar(t->clock[i], n, 70 + i);
-    }
-
-    if (n == 2) // timer2: process PAUSed PROCs in pauseList
-    {
-        PROC *p, *tempList = 0;
-        while (p = dequeue(&pauseList))
-        {
-            p->pause--;
-            if (p->pause == 0)
-            { // pause time expired
-                p->status = READY;
-                enqueue(&readyQueue, p);
+            if (n == 0)
+            { // timer0: display wall-clock directly
+                for (i = 0; i < 8; i++)
+                    // clear old clock area
+                    unkpchar(t->clock[i], n, 70 + i);
+                t->clock[7] = '0' + (t->ss % 10);
+                t->clock[6] = '0' + (t->ss / 10);
+                t->clock[4] = '0' + (t->mm % 10);
+                t->clock[3] = '0' + (t->mm / 10);
+                t->clock[1] = '0' + (t->hh % 10);
+                t->clock[0] = '0' + (t->hh / 10);
+                for (i = 0; i < 8; i++)
+                    // display new wall clock
+                    kpchar(t->clock[i], n, 70 + i);
             }
-            else
-                enqueue(&tempList, p);
+            if (n == 2)
+            { // timer2: process PAUSed PROCs in pauseList
+                PROC *p, *tempList = 0;
+                while (p = dequeue(&pauseList))
+                {
+                    p->pause--;
+                    if (p->pause == 0)
+                    { // pause time expired
+                        p->status = READY;
+                        enqueue(&readyQueue, p);
+                    }
+                    else
+                        enqueue(&tempList, p);
+                }
+                pauseList = tempList;
+                // updated pauseList
+            }
+            timer_clearInterrupt(n);
         }
-        pauseList = tempList;
-        // updated pauseList
     }
-    timer_clearInterrupt(n);
 }
 
-int timer_start(int n)
+void timer_start(int n) // timer_start(0), 1, etc.
 {
     TIMER *tp = &timer[n];
     kprintf("timer_start %d base=%x\n", n, tp->base);
-    *(tp->base + TCNTL) |= 0x80;
-    // set enable bit 7
-}
-
-int timer_clearInterrupt(int n)
-{
-    TIMER *tp = &timer[n];
-    *(tp->base + TINTCLR) = 0xFFFFFFFF;
+    *(tp->base + TCNTL) |= 0x80; // set enable bit 7
 }
 
 void timer_stop(int n)

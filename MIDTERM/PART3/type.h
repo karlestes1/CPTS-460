@@ -16,6 +16,8 @@ typedef unsigned int   u32;
 #define SIC_ENSET     (*((volatile u32 *)(SIC_BASE_ADDR + 0x008)))
 #define SIC_PICENSET  (*((volatile u32 *)(SIC_BASE_ADDR + 0x020)))
 
+#define UART0_IMSC (*((volatile u32 *)(SIC_BASE_ADDR + 0x000)))
+
 #define BLUE   0
 #define GREEN  1
 #define RED    2

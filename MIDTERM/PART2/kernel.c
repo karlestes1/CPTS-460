@@ -5,40 +5,48 @@ PROC proc[NPROC], *running, *freeList, *readyQueue;
 PROC *sleepList;
 int procsize = sizeof(PROC);
 int body();
-char *status[] = {"FREE", "READY", "SLEEP", "BLOCK", "ZOMBIE"};
+
+extern void timer_start(int);
+extern void timer_init();
+extern void tswitch();
+extern int ksleep(int);
+extern int kwakeup(int);
+extern int kexit();
+extern PROC* pauseList;
 
 int init()
 {
   int i, j;
   PROC *p;
   kprintf("kernel_init()\n");
-  for (i = 0; i < NPROC; i++) //Initialization of the PROC lis
+  for (i = 0; i < NPROC; i++)
   {
     p = &proc[i];
     p->pid = i;
-    p->status = FREE;
+    p->status = READY;
     p->next = p + 1;
   }
   proc[NPROC - 1].next = 0; // circular proc list
 
-  freeList = &proc[0]; //Put all the PROCS in the free list
+  freeList = &proc[0];
   readyQueue = 0;
   sleepList = 0;
 
-  p = running = dequeue(&freeList); //Start with PROC[0]
-  p->status = READY;
+  p = dequeue(&freeList);
   p->priority = 0;
-  p->ppid = 0; // P0 is its own parent
+  p->ppid = 0;
+  running = p;
+  
 
-  kprintf("running = %d\n", running->pid);
-  printList("freeList", freeList);
+  //timer_init();
+  //timer_start(0);
+  //kprintf("running = %d\n", running->pid);
+  //printList("freeList", freeList);
 }
 
 int kfork(int func, int priority)
 {
-  printf("\n\n***RUNNING KFORK***\n");
   int i;
-  PROC *pCur = 0;
   PROC *p = dequeue(&freeList);
   if (p == 0)
   {
@@ -48,25 +56,7 @@ int kfork(int func, int priority)
   p->status = READY;
   p->priority = priority;
   p->ppid = running->pid;
-
-  /*** Copied from my CPTS 360 Prelab 3 ***/
-  //Add new proc as child of running proc
-  if (running->child == 0)
-    running->child = p;
-  else
-  {
-    pCur = running->child;
-
-    while (pCur->sibling != 0)
-      pCur = pCur->sibling;
-
-    pCur->sibling = p;
-  }
-
   p->parent = running;
-  p->child = 0;
-  p->sibling = 0;
-  /*** END COPY ***/
 
   // set kstack for new proc to resume to func()
   // stack = r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r14
@@ -77,8 +67,8 @@ int kfork(int func, int priority)
   p->ksp = &(p->kstack[SSIZE - 14]);
   enqueue(&readyQueue, p);
 
-  printf("proc %d kforked a child %d\n", running->pid, p->pid);
-  printList("readyQueue", readyQueue);
+  //printf("proc %d kforked a child %d\n", running->pid, p->pid);
+  //printList("readyQueue", readyQueue);
   return p->pid;
 }
 
@@ -94,93 +84,47 @@ int scheduler()
     color = running->pid;
   }
 }
-
-// Copied from my own CPTS 360 Prelab 3
-int ps()
-{
-  printf("\n\n***RUNNING PS***\n");
-  int i;
-  PROC *p;
-  printf("\nPID  PPID  status\n");
-  printf("---  ----  ------\n ");
-  for (i = 0; i < NPROC; i++)
-  {
-    p = &proc[i];
-    printf(" %d    %d    ", p->pid, p->ppid);
-    if (p == running)
-      printf("RUNNING\n");
-    else
-      printf("%s\n", status[p->status]);
-  }
-}
-
-// Copied from my own CPTS 360 Prelab 3
-int resurrect()
-{
-  printf("\n\n***RUNNING RESURRECT***\n");
-  int i;
-  int alived = 0;
-  PROC *p;
-  kprintf("\nYour study of necormancy has paid off...\n");
-  for (i = 1; i < NPROC; i++)
-  {
-    p = &proc[i];
-    if (p->status == ZOMBIE)
-    {
-      alived = 1;
-      p->status = READY;
-      enqueue(&readyQueue, p);
-      kprintf("raised a ZOMBIE %d to live again\n", p->pid);
-    }
-  }
-  if (!alived)
-    kprintf("Unfortunately, there are no undead in sight\n");
-  //printList("readyQueue", readyQueue);
-}
-
 int body()
 {
   char c, cmd[64];
 
   kprintf("proc %d resume to body()\n", running->pid);
+  printList("readyQueue", readyQueue);
   while (1)
   {
-    printf("-------- proc %d running -----------\n", running->pid);
+    //printf("-------- proc %d running -----------\n", running->pid);
 
-    printf("parent proc=%d\n",running->ppid);
+    //printList("freeList  ", freeList);
 
-    //Print the children of the current running process
-    printf("Children of proc %d: ", running->pid);
+    //printsleepList(sleepList);
 
-    for(PROC* pCur = running->child; pCur != 0; pCur = pCur->sibling)
-    {
-      printf("%d, ", pCur->pid);
-    }
-    printf("\n");
+    //printf("Enter a command [switch|kfork|exit|sleep|wait] : ",running->pid);
 
-    printList("freeList  ", freeList);
-    printList("readyQueue", readyQueue);
-    printsleepList(sleepList);
-
-    printf("Enter a command [ps|switch|fork|sleep|wakeup|wait|resurrect|exit] : ",
-           running->pid);
-    kgets(cmd);
-
-    if (strcmp(cmd, "ps") == 0)
-      ps();
-    else if (strcmp(cmd, "switch") == 0)
-      tswitch();
-    else if (strcmp(cmd, "fork") == 0)
-      kfork((int)body, 1);
-    else if (strcmp(cmd, "sleep") == 0)
-      do_sleep();
-    else if (strcmp(cmd, "wakeup") == 0)
-      do_wakeup();
-    else if (strcmp(cmd, "wait") == 0)
-      do_wait();
-    else if (strcmp(cmd, "resurrect") == 0)
-      resurrect();
-    else if (strcmp(cmd, "exit") == 0)
-      kexit(1);
+    //printf("Enter seconds to sleep:");
+    char timestr[5];
+    kgets(timestr);
+    int time = atoi(timestr);
   }
+}
+
+void tsleep()
+{
+
+  char timestr[5];
+  kgets(timestr);
+  int time = atoi(timestr);
+  
+}
+
+int pause(int t)
+{
+  lock();
+  // disable IRQ interrupts
+  running->pause = t;
+  running->status = PAUSE;
+  
+  enqueue(&pauseList, running);
+  tswitch();
+  unlock();
+  // enable IRQ interrupts
 }

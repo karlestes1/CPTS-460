@@ -13,6 +13,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
+extern int kgets(char s[ ]);
 
 int kprintf(char *, ...);
 int strlen(char *s)
@@ -43,7 +44,7 @@ int strcpy(char *dest, char *src)
   *dest = 0;
 }
 
-int atoi(char *s)
+int atoi( const char *s)
 {
   int v = 0;
   while (*s){

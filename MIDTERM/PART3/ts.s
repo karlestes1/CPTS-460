@@ -2,13 +2,14 @@
 .code 32
 .global reset_handler, vectors_start, vectors_end
 .global get_fault_status, get_fault_addr
+
 reset_handler:          // entry point
 
-// Versatilepb: 256 MB RAM, 2 1 MB I/O sections at 256 MB
-// clear ptable at 0x4000 (16 KB) to 0
-mov r0, #0x4000 // ptable at 0x4000 = 16 KB
-mov r1, #4096 // 4096 entries
-mov r2, #0 // fill all with 0
+    // Versatilepb: 256 MB RAM, 2 1 MB I/O sections at 256 MB
+    // clear ptable at 0x4000 (16 KB) to 0
+    mov r0, #0x4000 // ptable at 0x4000 = 16 KB
+    mov r1, #4096 // 4096 entries
+    mov r2, #0 // fill all with 0
 
 1:
     str r2, [r0], #4            // store r3 to [r0]; inc r0 by 4
@@ -91,21 +92,21 @@ irq_handler:
     ldmfd sp!, {r0-r12, pc}^
 
 vectors_start: // vector table
-LDR PC, reset_handler_addr
-LDR PC, undef_handler_addr
-LDR PC, swi_handler_addr
-LDR PC, prefetch_abort_handler_addr
-LDR PC, data_abort_handler_addr
-B .
-LDR PC, irq_handler_addr
-LDR PC, fiq_handler_addr
-reset_handler_addr: .word reset_handler
-undef_handler_addr: .word undef_handler
-svc_handler_addr: .word swi_entry
-prefetch_abort_handler_addr: .word prefetch_abort_handler
-data_abort_handler_addr: .word data_handler
-irq_handler_addr: .word irq_handler
-fiq_handler_addr: .word fiq_handler
+    LDR PC, reset_handler_addr
+    LDR PC, undef_handler_addr
+    LDR PC, swi_handler_addr
+    LDR PC, prefetch_abort_handler_addr
+    LDR PC, data_abort_handler_addr
+    B .
+    LDR PC, irq_handler_addr
+    LDR PC, fiq_handler_addr
+    reset_handler_addr: .word reset_handler
+    undef_handler_addr: .word undef_handler
+    svc_handler_addr: .word swi_entry
+    prefetch_abort_handler_addr: .word prefetch_abort_handler
+    data_abort_handler_addr: .word data_handler
+    irq_handler_addr: .word irq_handler
+    fiq_handler_addr: .word fiq_handler
 vectors_end:
 
 get_fault_status: // read and return MMU reg 5
@@ -117,3 +118,6 @@ get_fault_addr: // read and return MMU reg 6
 get_spsr: // get SPSR
     mrs r0, spsr
     mov pc, lr
+    
+    
+.end

@@ -1,6 +1,3 @@
-#ifndef TYPE_H
-#define TYPE_H
-
 typedef unsigned char  u8;
 typedef unsigned short u16;
 typedef unsigned int   u32;
@@ -31,19 +28,19 @@ typedef unsigned int   u32;
 #define  SLEEP  2
 #define  BLOCK  3
 #define  ZOMBIE 4
+#define  PAUSE  5
 #define  printf  kprintf
  
 typedef struct proc{
   struct proc *next;
   int    *ksp;
-
+  int    pause;
   int    pid;
   int    ppid;
   int    priority;
   int    status;
   int    event;
   int    exitCode;
-  int    pause;
 
   struct proc *parent;
   struct proc *child;
@@ -52,4 +49,10 @@ typedef struct proc{
   int    kstack[SSIZE];
 }PROC;
 
-#endif
+
+typedef struct semaphore
+{
+  int spinlock; // spin lock, needed only in MP systems
+  int value;    // initial value of semaphore
+  PROC *queue   // FIFO queue of blocked processes
+}SEMAPHORE;

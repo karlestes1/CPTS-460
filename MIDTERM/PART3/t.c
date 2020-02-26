@@ -55,8 +55,10 @@ int data_chandler() //data abort handler
 
 int copy_vector_table()
 {
+    extern u32 vectors_start;
+    extern u32 vectors_end;
     u32 *vectors_src = &vectors_start;
-    u32 *vectors_dst = u32 *vectors_dst = (u32 *)0;
+    u32 *vectors_dst = (u32 *)0;
     while (vectors_src < &vectors_end)
         *vectors_dst++ = *vectors_src++;
 }
@@ -87,7 +89,7 @@ int main()
     UART0_IMSC = 1 << 4;        // enable UART RX interrupts
     SIC_ENSET = 1 << 3;         // KBD int = 3 on SIC
     SIC_PICENSET = 1 << 3;      // KBD int = 3 on SIC
-    kbd->control = 1 << 4;
+    control = 1 << 4; //***NOTE: ERASED KBD->
     timer_init();
     timer_start(0);
 

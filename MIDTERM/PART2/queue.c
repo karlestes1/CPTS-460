@@ -22,7 +22,7 @@ int enqueue(PROC **queue, PROC *p)
   if (q==0 || p->priority > q->priority){
     *queue = p;
     p->next = q;
-    return;
+    return 0;
   }
   while (q->next && p->priority <= q->next->priority){
     q = q->next;
@@ -47,6 +47,7 @@ int printList(char *name, PROC *p)
     p = p->next;
   }
   printf("NULL\n");
+  return 0;
 }
 
 int printsleepList(PROC *p)
@@ -57,4 +58,5 @@ int printsleepList(PROC *p)
     p = p->next;
   }
   printf("NULL\n");
+  return 0;
 }
