@@ -11,7 +11,7 @@
 
 typedef unsigned int u32;
 
-PROC* pauseList;
+PROC *pauseList;
 
 extern int color; // define this in your t.c file
 extern char *tab; // define this in your t.c file: char *tab = "0123456789ABCDEF";
@@ -74,21 +74,29 @@ int timer_clearInterrupt(int n) // timer_start(0), 1, etc.
 
 void timer_handler(int n) // n=timer unit
 {
+
     int i;
     TIMER *t = &timer[n];
     t->tick++;
-    t->ss = t->tick;
-    if (t->ss == 60)
+
+    if (t->tick == 120*60)
     {
-        t->ss = 0;
-        t->mm++;
-        if (t->mm == 60)
+        t->tick = 0;
+        //printf("test");
+        t->ss++;
+        if (t->ss == 60)
         {
-            t->mm = 0;
-            t->hh++;
+            t->ss = 0;
+            t->mm++;
+            if (t->mm == 60)
+            {
+                t->mm = 0;
+                t->hh++;
+            }
 
             if (n == 0)
             { // timer0: display wall-clock directly
+                //printf("test");
                 for (i = 0; i < 8; i++)
                     // clear old clock area
                     unkpchar(t->clock[i], n, 70 + i);

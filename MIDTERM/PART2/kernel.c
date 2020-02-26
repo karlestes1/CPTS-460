@@ -88,8 +88,8 @@ int body()
 {
   char c, cmd[64];
 
-  kprintf("proc %d resume to body()\n", running->pid);
-  printList("readyQueue", readyQueue);
+  kprintf("\nproc %d resume to body()\n", running->pid);
+  printList("\nreadyQueue", readyQueue);
   while (1)
   {
     //printf("-------- proc %d running -----------\n", running->pid);

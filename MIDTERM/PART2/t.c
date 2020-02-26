@@ -23,7 +23,6 @@ int color;
 #include "exceptions.c"
 #include "kernel.c"
 #include "wait.c"
-#include "timer_queue.c"
 #include "timer.c"
 
 
@@ -88,10 +87,10 @@ int main()
    row = col = 0;
 
    fbuf_init();
+   kbd_init();
    //timer_init(); // timer2,3 at VIC.bit5
 
    color = RED; // int color in vid.c file
-   printf("main starts\n");
    /* enable VIC for timer interrupts */
 
 
@@ -109,7 +108,7 @@ int main()
    SIC_ENSET = 1 << 3;    // KBD int=3 on SIC
    SIC_PICENSET = 1 << 3; // KBD int=3 on SIC
 
-   kbd_init();
+   
    kprintf("Welcome to WANIX in Arm\n");
    
    //VIC_INTENABLE = 0;
@@ -121,11 +120,12 @@ int main()
 
    
    timer_init();
+   init();
+   kfork((int)body, 1);
    timer_start(0);
    // timer_start(1);
    // timer_start(2);
    // timer_start(3);
-   init();
    printf("P0 switch to P1\n");
    for(int i = 0; i < 4; i++){
       //kfork((int)tsleep, 1);
