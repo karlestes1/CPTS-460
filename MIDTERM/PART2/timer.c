@@ -78,58 +78,51 @@ void timer_handler(int n) // n=timer unit
     int i;
     TIMER *t = &timer[n];
     t->tick++;
-
-    if (t->tick == 120*60)
+    t->ss = t->tick;
+    if (t->ss == 60)
     {
-        t->tick = 0;
-        //printf("test");
-        t->ss++;
-        if (t->ss == 60)
+        t->ss = 0;
+        t->mm++;
+        if (t->mm == 60)
         {
-            t->ss = 0;
-            t->mm++;
-            if (t->mm == 60)
-            {
-                t->mm = 0;
-                t->hh++;
-            }
-
-            if (n == 0)
-            { // timer0: display wall-clock directly
-                //printf("test");
-                for (i = 0; i < 8; i++)
-                    // clear old clock area
-                    unkpchar(t->clock[i], n, 70 + i);
-                t->clock[7] = '0' + (t->ss % 10);
-                t->clock[6] = '0' + (t->ss / 10);
-                t->clock[4] = '0' + (t->mm % 10);
-                t->clock[3] = '0' + (t->mm / 10);
-                t->clock[1] = '0' + (t->hh % 10);
-                t->clock[0] = '0' + (t->hh / 10);
-                for (i = 0; i < 8; i++)
-                    // display new wall clock
-                    kpchar(t->clock[i], n, 70 + i);
-            }
-            if (n == 2)
-            { // timer2: process PAUSed PROCs in pauseList
-                PROC *p, *tempList = 0;
-                while (p = dequeue(&pauseList))
-                {
-                    p->pause--;
-                    if (p->pause == 0)
-                    { // pause time expired
-                        p->status = READY;
-                        enqueue(&readyQueue, p);
-                    }
-                    else
-                        enqueue(&tempList, p);
-                }
-                pauseList = tempList;
-                // updated pauseList
-            }
-            timer_clearInterrupt(n);
+            t->mm = 0;
+            t->hh++;
         }
     }
+    if (n == 0)
+    { // timer0: display wall-clock directly
+        //printf("test");
+        for (i = 0; i < 8; i++)
+            // clear old clock area
+            unkpchar(t->clock[i], n, 70 + i);
+        t->clock[7] = '0' + (t->ss % 10);
+        t->clock[6] = '0' + (t->ss / 10);
+        t->clock[4] = '0' + (t->mm % 10);
+        t->clock[3] = '0' + (t->mm / 10);
+        t->clock[1] = '0' + (t->hh % 10);
+        t->clock[0] = '0' + (t->hh / 10);
+        for (i = 0; i < 8; i++)
+            // display new wall clock
+            kpchar(t->clock[i], n, 70 + i);
+    }
+    if (n == 2)
+    { // timer2: process PAUSed PROCs in pauseList
+        PROC *p, *tempList = 0;
+        while (p = dequeue(&pauseList))
+        {
+            p->pause--;
+            if (p->pause == 0)
+            { // pause time expired
+                p->status = READY;
+                enqueue(&readyQueue, p);
+            }
+            else
+                enqueue(&tempList, p);
+        }
+        pauseList = tempList;
+        // updated pauseList
+    }
+    timer_clearInterrupt(n);
 }
 
 void timer_start(int n) // timer_start(0), 1, etc.
