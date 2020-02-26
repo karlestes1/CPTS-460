@@ -78,49 +78,56 @@ void timer_handler(int n) // n=timer unit
     int i;
     TIMER *t = &timer[n];
     t->tick++;
-    t->ss = t->tick;
-    if (t->ss == 60)
+
+    if (t->tick == 120)
     {
-        t->ss = 0;
-        t->mm++;
-        if (t->mm == 60)
+        t->tick = 0;
+        t->ss++;
+        if (t->ss == 60)
         {
-            t->mm = 0;
-            t->hh++;
-        }
-    }
-    if (n == 0)
-    { // timer0: display wall-clock directly
-        //printf("test");
-        for (i = 0; i < 8; i++)
-            // clear old clock area
-            unkpchar(t->clock[i], n, 70 + i);
-        t->clock[7] = '0' + (t->ss % 10);
-        t->clock[6] = '0' + (t->ss / 10);
-        t->clock[4] = '0' + (t->mm % 10);
-        t->clock[3] = '0' + (t->mm / 10);
-        t->clock[1] = '0' + (t->hh % 10);
-        t->clock[0] = '0' + (t->hh / 10);
-        for (i = 0; i < 8; i++)
-            // display new wall clock
-            kpchar(t->clock[i], n, 70 + i);
-    }
-    if (n == 2)
-    { // timer2: process PAUSed PROCs in pauseList
-        PROC *p, *tempList = 0;
-        while (p = dequeue(&pauseList))
-        {
-            p->pause--;
-            if (p->pause == 0)
-            { // pause time expired
-                p->status = READY;
-                enqueue(&readyQueue, p);
+            t->ss = 0;
+            t->mm++;
+            if (t->mm == 60)
+            {
+                t->mm = 0;
+                t->hh++;
             }
-            else
-                enqueue(&tempList, p);
         }
-        pauseList = tempList;
-        // updated pauseList
+        if (n == 0)
+        { // timer0: display wall-clock directly
+            //printf("test");
+            for (i = 0; i < 8; i++)
+            {
+                // clear old clock area
+                unkpchar(t->clock[i], n, 70 + i);
+            }
+            t->clock[7] = '0' + (t->ss % 10);
+            t->clock[6] = '0' + (t->ss / 10);
+            t->clock[4] = '0' + (t->mm % 10);
+            t->clock[3] = '0' + (t->mm / 10);
+            t->clock[1] = '0' + (t->hh % 10);
+            t->clock[0] = '0' + (t->hh / 10);
+            for (i = 0; i < 8; i++)
+            {
+                // display new wall clock
+                kpchar(t->clock[i], n, 70 + i);
+            }
+        }
+        if (pauseList)
+        { // timer2: process PAUSed PROCs in pauseList
+            
+            
+            
+            pauseList->pause--;
+            
+            if(pauseList->pause == 0)
+                dequeueT(&pauseList);
+            else
+                printTimerQueue(pauseList);
+            // if(pauseList->pause == 0){
+
+            // }
+        }
     }
     timer_clearInterrupt(n);
 }
@@ -137,4 +144,38 @@ void timer_stop(int n)
     // stop a timer
     TIMER *tp = &timer[n];
     *(tp->base + TCNTL) &= 0x7F; // clear enable bit 7
+}
+
+void t_cmd()
+{
+    kprintf("proc %d resume to body()\n", running->pid);
+    printList("readyQueue", readyQueue);
+    printf("\nEnter time to sleep:");
+    char timestr[5];
+    kgets(timestr);
+    int time = atoi(timestr);
+    pause(time);
+}
+
+int pause(int t)
+{
+    //printf("\nIn Pause\n");
+    lock();
+    // disable IRQ interrupts
+    running->pause = t;
+    running->status = PAUSE;
+
+    enqueueT(&pauseList, running, t);
+    tswitch();
+    unlock();
+    // enable IRQ interrupts
+}
+
+int tsleep(int event)
+{
+    int SR = int_off();
+    running->event = event;
+    running->status = SLEEP;
+    tswitch();
+    int_on(SR);
 }

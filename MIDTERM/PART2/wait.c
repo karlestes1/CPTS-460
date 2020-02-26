@@ -19,7 +19,6 @@ int ksleep(int event)
   running->event = event;
   running->status = SLEEP;
   enqueue(&sleepList,running);
-  
   tswitch();
   int_on(SR);
 }

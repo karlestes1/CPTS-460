@@ -30,8 +30,6 @@ typedef unsigned int   u32;
 #define  ZOMBIE 4
 #define  PAUSE  5
 #define  printf  kprintf
-
-#define DEBUG 1
  
 typedef struct proc{
   struct proc *next;

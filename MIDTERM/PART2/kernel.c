@@ -36,12 +36,7 @@ int init()
   p->priority = 0;
   p->ppid = 0;
   running = p;
-  
 
-  //timer_init();
-  //timer_start(0);
-  //kprintf("running = %d\n", running->pid);
-  //printList("freeList", freeList);
 }
 
 int kfork(int func, int priority)
@@ -88,8 +83,8 @@ int body()
 {
   char c, cmd[64];
 
-  kprintf("\nproc %d resume to body()\n", running->pid);
-  printList("\nreadyQueue", readyQueue);
+  kprintf("proc %d resume to body()\n", running->pid);
+  printList("readyQueue", readyQueue);
   while (1)
   {
     //printf("-------- proc %d running -----------\n", running->pid);
@@ -107,24 +102,3 @@ int body()
   }
 }
 
-void tsleep()
-{
-
-  char timestr[5];
-  kgets(timestr);
-  int time = atoi(timestr);
-  
-}
-
-int pause(int t)
-{
-  lock();
-  // disable IRQ interrupts
-  running->pause = t;
-  running->status = PAUSE;
-  
-  enqueue(&pauseList, running);
-  tswitch();
-  unlock();
-  // enable IRQ interrupts
-}
