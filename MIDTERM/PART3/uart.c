@@ -12,6 +12,7 @@
 #define MIS 0x40
 #define SBUFSIZE 12870
 
+
 typedef volatile struct uart
 {
     char *base; // base address; as char *
@@ -23,6 +24,11 @@ typedef volatile struct uart
     int outdata, outroom, outhead, outtail;
     volatile int txon; // 1=TX interrupt is on
 } UART;
+
+extern int do_rx(UART*);
+extern int do_tx(UART*);
+extern void lock();
+extern void unlock();
 
 UART uart[4]; // 4 UART structures
 int uart_init()
@@ -73,7 +79,7 @@ int do_tx(UART *up) // TX interrupt handler
     {                              // if outbuf[ ] is empty
         *(up->base + IMSC) = 0x10; // disable TX interrupt
         up->txon = 0;              // turn off txon flag
-        return;
+        return 0;
     }
     c = up->outbuf[up->outtail++];
     up->outtail %= SBUFSIZE;
@@ -109,7 +115,7 @@ int uputc(UART *up, char c)
         up->outdata++;
         up->outroom--;
         unlock();
-        return;
+        return 0;
     }
     // txon==0 means TX is off => output c & enable TX interrupt
     // PL011 TX is riggered only if write char, else no TX interrupt

@@ -33,6 +33,7 @@ typedef unsigned int   u32;
 #define  SLEEP  2
 #define  BLOCK  3
 #define  ZOMBIE 4
+#define  PAUSE 5
 #define  printf  kprintf
  
 typedef struct proc{

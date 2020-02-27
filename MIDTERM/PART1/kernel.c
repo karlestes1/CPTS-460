@@ -181,6 +181,6 @@ int body()
     else if (strcmp(cmd, "resurrect") == 0)
       resurrect();
     else if (strcmp(cmd, "exit") == 0)
-      kexit(1);
+      do_exit();
   }
 }

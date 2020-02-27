@@ -17,5 +17,10 @@ SECTIONS
   svc_stack = .;
   . = . + 0x1000; /* 4kB of irq stack memory */
   irq_stack = .;
+  . = . + 0x1000;
+  und_stack = .;
+  . = . + 0x1000;
+  abt_stack = .;
 }
+
 

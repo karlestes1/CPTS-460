@@ -17,6 +17,8 @@
 |                         KRW   dom0        |
 *****************************************************/
 
+PROC *readyQueue;
+
 int mkptable()
 {
     // build level-1 pgtable using 1 MB sections
@@ -27,9 +29,9 @@ int mkptable()
     {
         ptable[i] = 0;
     }
-    printf("2. fill 258 entries of pgtable to ID map 258 MB VA to PA\n");
+    printf("2. fill 130 entries of pgtable to ID map 130 MB VA to PA\n");
     pentry = 0x412;           // AP = 01,domain = 0000, CB = 00, type = 02 for section
-    for (i = 0; i < 258; i++) // 258 level-1 page table entries
+    for (i = 0; i < 130; i++) // 258 level-1 page table entries
     {
         ptable[i] = pentry;
         pentry += 0x100000;
@@ -70,9 +72,10 @@ int irq_chandler() //IRQ interrupts handler
     int sicstatus = SIC_STATUS;
 
     if (vicstatus & (1 << 4))
-        timer0_handler();
-    if (vicstatus & (1 << 12))
-        uart0_handler();
+    {
+        timer_handler(0);
+    }
+
     if (vicstatus & (1 << 31) && sicstatus & (1 << 3))
         kbd_handler();
 }
@@ -81,28 +84,34 @@ int main()
 {
     int i, *p;
     char line[128];
+    printf("Doing keyboard init\n");
     kbd_init();
-    uart_init();
+    //uart_init();
     VIC_INTENABLE |= (1 << 4);  //timer0 at 4
     VIC_INTENABLE |= (1 << 12); //uart0 at 12
     VIC_INTENABLE = (1 << 31);  // SIC to VIC's IRQ31
     UART0_IMSC = 1 << 4;        // enable UART RX interrupts
     SIC_ENSET = 1 << 3;         // KBD int = 3 on SIC
     SIC_PICENSET = 1 << 3;      // KBD int = 3 on SIC
-    control = 1 << 4; //***NOTE: ERASED KBD->
-    timer_init();
+    control = 1 << 4;           //***NOTE: ERASED KBD->
+
+    printf("Starting timer\n");
     timer_start(0);
 
-    printf("test MMU protection: try to access VA = 0x00200000\n");
-    p = (int *)0x00200000;
+    printf("test MM at VA=2MB\n");
+    p = (int *)(2 * 0x100000);
     *p = 123;
 
-    printf("test MMU protection: try to access VA = 0x02000000\n");
-    p = (int *)0x02000000;
+    printf("test MM at VA=127MB\n");
+    p = (int *)(127 * 0x100000);
     *p = 123;
 
-    printf("test MMU protection: try to access VA = 0x20000000\n");
-    p = (int *)0x20000000;
+    printf("test MM at VA=128MB\n");
+    *p = (int *)(128 * 0x100000);
+    *p = 123;
+
+    printf("test MM at VA=512MB\n");
+    *p = (int *)(512 * 0x100000);
     *p = 123;
 
     while (1)

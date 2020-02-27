@@ -100,7 +100,7 @@ void timer_handler(int n) // n=timer unit
             for (i = 0; i < 8; i++)
             {
                 // clear old clock area
-                unkpchar(t->clock[i], n, 70 + i);
+                //unkpchar(t->clock[i], n, 70 + i);
             }
             t->clock[7] = '0' + (t->ss % 10);
             t->clock[6] = '0' + (t->ss / 10);
@@ -114,21 +114,7 @@ void timer_handler(int n) // n=timer unit
                 kpchar(t->clock[i], n, 70 + i);
             }
         }
-        if (pauseList)
-        { // timer2: process PAUSed PROCs in pauseList
-            
-            
-            
-            pauseList->pause--;
-            
-            if(pauseList->pause == 0)
-                dequeueT(&pauseList);
-            else
-                printTimerQueue(pauseList);
-            // if(pauseList->pause == 0){
 
-            // }
-        }
     }
     timer_clearInterrupt(n);
 }

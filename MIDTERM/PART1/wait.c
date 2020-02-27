@@ -83,7 +83,7 @@ int kwait(int *status)
 
       for(pCur = running->child, pPrev = 0; pCur; pPrev = pCur, pCur = pCur->sibling)
       {
-      if(pCur->status == 3)
+      if(pCur->status == 4)
       {
         *status = pCur->exitCode;
 
@@ -147,6 +147,23 @@ int do_wakeup()
 
   //Call wakeup function
   kwakeup(event);
+}
+
+int do_exit()
+{
+  int event;
+  char input[16];
+
+  //Get input value
+  printf("\nEnter an event value to exit on : ");
+  kgets(input);
+  printf("\n");
+
+  //Convert to int
+  event = atoi(input);
+
+  //Call sleep function
+  kexit(event);
 }
 
 // Gives away children of running process to P1

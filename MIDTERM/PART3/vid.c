@@ -117,6 +117,21 @@ int setpix(int x, int y)
      fb[pix] = 0x00FFFFFF;
 
 }
+int undchar(unsigned char c, int x, int y) // erase char at (x,y)
+{
+  int row, bit;
+  unsigned char *caddress, byte;
+  caddress = font + c * 16;
+  for (row = 0; row < 16; row++)
+  {
+    byte = *(caddress + row);
+    for (bit = 0; bit < 8; bit++)
+    {
+      if (byte & (1 << bit))
+        clrpix(x + bit, y + row);
+    }
+  }
+}
 
 int dchar(unsigned char c, int x, int y)
 {
@@ -149,6 +164,7 @@ int kpchar(char c, int ro, int co)
    y = ro*16;
    //printf("c=%x [%d%d] (%d%d)\n", c, ro,co,x,y);
    dchar(c, x, y);
+   return 0;
    
 }
 
@@ -184,7 +200,7 @@ int kputc(char c)
     col=0;
     //printf("row=%d col=%d\n", row, col);
     putcursor();
-    return;
+    return 0;
   }
   if (c=='\n'){
     row++;
@@ -194,7 +210,7 @@ int kputc(char c)
     }
     //printf("row=%d col=%d\n", row, col);
     putcursor();
-    return;
+    return 0;
   }
   if (c=='\b'){
     if (col>0){
@@ -202,7 +218,7 @@ int kputc(char c)
       col--;
       putcursor();
     }
-    return;
+    return 0;
   }
   // c is ordinary char
   kpchar(c, row, col);
