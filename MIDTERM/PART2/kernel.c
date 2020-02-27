@@ -5,7 +5,7 @@ PROC proc[NPROC], *running, *freeList, *readyQueue;
 PROC *sleepList;
 int procsize = sizeof(PROC);
 int body();
-char *status[] = {"FREE", "READY", "SLEEP", "BLOCK", "ZOMBIE"};
+char *status[] = {"FREE", "READY", "SLEEP", "BLOCK", "ZOMBIE", "PAUSE"};
 
 int init()
 {

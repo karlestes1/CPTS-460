@@ -23,7 +23,6 @@ int color;
 #include "exceptions.c"
 #include "kernel.c"
 #include "wait.c"
-#include "timer_queue.c"
 #include "timer.c"
 
 
@@ -172,6 +171,7 @@ int main()
    
    //VIC_INTENABLE = 0;
    VIC_INTENABLE |= (1 << 4);  // timer0,1 at bit4
+   VIC_INTENABLE |= (1 << 5);  // timer0,2 at bit5
    VIC_INTENABLE |= (1 << 12); // UART0 at bit12
    VIC_INTENABLE |= (1 << 13); // UART1 at bit13
    VIC_INTENABLE |= (1 << 31); // SIC to VIC's IRQ31
@@ -179,7 +179,7 @@ int main()
 
    timer_start(0);
    // timer_start(1);
-   // timer_start(2);
+   timer_start(2);
    // timer_start(3);
    init();
    printf("P0 switch to P1\n");

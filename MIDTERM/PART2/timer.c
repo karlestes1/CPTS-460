@@ -7,8 +7,6 @@
 #define TMIS 0x5
 #define TBGLOAD 0x660 //3 Interrupts and Exceptions Processing typedef volatile struct
 
-//#include "vid.c"
-
 typedef unsigned int u32;
 
 PROC *pauseList;
@@ -113,20 +111,21 @@ void timer_handler(int n) // n=timer unit
                 kpchar(t->clock[i], n, 70 + i);
             }
         }
-        if (pauseList)
-        { // timer2: process PAUSed PROCs in pauseList
-            
-            
-            
-            pauseList->pause--;
-            
-            if(pauseList->pause == 0)
-                dequeueT(&pauseList);
-            else
-                printTimerQueue(pauseList);
-            // if(pauseList->pause == 0){
+        if(n == 2)
+        {
+            if (pauseList)
+            { // timer2: process PAUSed PROCs in pauseList
 
-            // }
+                pauseList->pause--;
+
+                if (pauseList->pause == 0)
+                    dequeueT(&pauseList);
+                else
+                    printTimerQueue(pauseList);
+                // if(pauseList->pause == 0){
+
+                // }
+            }
         }
     }
     timer_clearInterrupt(n);

@@ -21,13 +21,15 @@ extern int ps();
 
 int enqueue(PROC **queue, PROC *p)
 {
-  PROC *q  = *queue;
-  if (q==0 || p->priority > q->priority){
+  PROC *q = *queue;
+  if (q == 0 || p->priority > q->priority)
+  {
     *queue = p;
     p->next = q;
     return 0;
   }
-  while (q->next && p->priority <= q->next->priority){
+  while (q->next && p->priority <= q->next->priority)
+  {
     q = q->next;
   }
   p->next = q->next;
@@ -46,7 +48,8 @@ PROC *dequeue(PROC **queue)
 int printList(char *name, PROC *p)
 {
   printf("%s=", name);
-  while(p){
+  while (p)
+  {
     printf("[%d%d]->", p->pid, p->priority);
     p = p->next;
   }
@@ -57,7 +60,8 @@ int printList(char *name, PROC *p)
 int printsleepList(PROC *p)
 {
   printf("sleepList=");
-  while(p){
+  while (p)
+  {
     printf("[%devent=%x]->", p->pid, p->event);
     p = p->next;
   }
@@ -65,22 +69,23 @@ int printsleepList(PROC *p)
   return 0;
 }
 
-
 int enqueueT(PROC **queue, PROC *p, int seconds)
 {
-  PROC* q  = *queue, *pPrev = 0;
-  
+  PROC *q = *queue, *pPrev = 0;
+
   //queue is empty
-  if (q==0){
+  if (q == 0)
+  {
     *queue = p;
     p->next = 0;
     p->pause = seconds;
     //ksleep(p);
     return 0;
   }
-  
+
   //need to insert at front of list
-  if(seconds < q->pause ){
+  if (seconds < q->pause)
+  {
     p->next = q;
     p->pause = seconds;
     q->pause = q->pause - seconds;
@@ -88,23 +93,23 @@ int enqueueT(PROC **queue, PROC *p, int seconds)
     //ksleep(p);
     return 0;
   }
-  
+
   int global_seconds = q->pause;
-  
+
   printf("General insert");
-  
+
   // Locate PROC before point of insertion
-  while(q->next != 0 && seconds < q->pause)
+  while (q->next != 0 && seconds < q->pause)
     q = q->next;
-    
+
   p->next = q->next;
   q->next = p;
-  
+
   p->pause = seconds - global_seconds;
-  
-  if(p->next)
+
+  if (p->next)
     p->next->pause = p->next->pause - p->pause;
-  
+
   //ksleep(p);
   return 0;
 }
@@ -112,22 +117,29 @@ int enqueueT(PROC **queue, PROC *p, int seconds)
 PROC *dequeueT(PROC **queue)
 {
   PROC *p = *queue;
+
+  int SR = int_off(); // disable IRQ and return CPSR
+
   if (p)
   {
+    printf("wakeup %d\n", p->pid);
     p->status = READY;
     *queue = p->next;
     enqueue(&readyQueue, p);
   }
-  
+  int_on(SR); // restore original CPSR
+
   ps();
-  
+  printList("readyQueue", readyQueue);
+
   return p;
 }
 
 int printTimerQueue(PROC *p)
 {
   printf("timerqueue=");
-  while(p){
+  while (p)
+  {
     printf("[%d %d]->", p->pid, p->pause);
     p = p->next;
   }
