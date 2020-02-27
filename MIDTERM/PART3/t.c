@@ -41,7 +41,7 @@ int mkptable()
 }
 
 int data_chandler() //data abort handler
-{
+{   
     u32 fault_status, fault_addr, domain, status;
     int spsr = get_spsr();
     printf("data_abort exception in ");
