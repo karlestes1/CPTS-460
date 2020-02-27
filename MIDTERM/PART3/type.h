@@ -38,7 +38,7 @@ typedef unsigned int   u32;
 typedef struct proc{
   struct proc *next;
   int    *ksp;
-
+  int    pause;
   int    pid;
   int    ppid;
   int    priority;

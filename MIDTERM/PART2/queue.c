@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // queue.c file
 //extern PROC *freeList;
 extern PROC *readyQueue;
+extern int ps();
 
 int enqueue(PROC **queue, PROC *p)
 {
@@ -35,6 +36,7 @@ int enqueue(PROC **queue, PROC *p)
 
 PROC *dequeue(PROC **queue)
 {
+
   PROC *p = *queue;
   if (p)
     *queue = p->next;
@@ -116,6 +118,8 @@ PROC *dequeueT(PROC **queue)
     *queue = p->next;
     enqueue(&readyQueue, p);
   }
+  
+  ps();
   
   return p;
 }

@@ -4,8 +4,8 @@
 #include "string.c"
 #include "uart.c"
 #include "kbd.c"
-#include "timer.c"
 #include "vid.c"
+#include "timer.c"
 #include "exceptions.c"
 
 /* set up MMU using 1 MB sections to ID map VA to PA */
