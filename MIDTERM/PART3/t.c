@@ -31,10 +31,14 @@ int mkptable()
     }
     printf("2. fill 130 entries of pgtable to ID map 130 MB VA to PA\n");
     pentry = 0x412;           // AP = 01,domain = 0000, CB = 00, type = 02 for section
-    for (i = 0; i < 130; i++) // 258 level-1 page table entries
+    for (i = 0; i < 258; i++) // 258 level-1 page table entries
     {
+        if(i < 128 || i > 255)
+        {
         ptable[i] = pentry;
+        }
         pentry += 0x100000;
+        
     }
     printf("3. finished building level-1 page table\n");
     printf("4. return to set TTB, domain and enable MMU\n");
