@@ -1,0 +1,30 @@
+Karl Estes
+CPTS 460 Midterm 2020
+
+
+For testing: int *p;
+		printf("test MM at VA=2MB\n");
+		p = (int *)(2*0x100000); *p = 123;
+		
+		printf("test MM at VA=127MB\n");
+		p = (int *)(127*0x100000); *p = 123;
+		
+		printf("test MM at VA=128MB\n");
+		*p = (int *)(128*0x100000); *p = 123;
+		
+		printf("test MM at VA=512MB\n");
+		*p = (int *)(512*0x100000); *p = 123;
+
+(1). Which of these will generate data_abort faults? WHY?
+
+     Only the last one (512*0x100000) will generate a data fault. The first one is well within the 128 MB of memory. The third one goes into the I/O buffer,
+     but that memory is still valid to access. It isn't until you try to access the 512 address offset that you try and access memory you do not have access to
+     and is not in the pagetable. 
+
+(2). When a data_abort fault occurs, the program displays some error messages.
+     DRAW a diagram (with reason) to show the control flow of the CPU from
+     where the fault occurred to where it shows the error messages.
+     
+     reset_handler -> main (called in assembly code)
+     main -> abort_handler (main tries to access a protected memory location)
+     abort_handler -> data_chandler (called in assembly code)
