@@ -1,0 +1,5 @@
+dd if=/dev/zero of=ramdisk bs=1024 count=1024 # create ramdisk file
+mke2fs -b 1024 ramdisk 1024 # format it as 1mb ext2 fs
+sudo mount -o loop ramdisk /mnt
+sudo mkdir /mnt/bin
+sudo umount /mnt
