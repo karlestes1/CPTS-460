@@ -85,3 +85,10 @@ int memcpy(char *dest, char *src, int size)
     *dest++ = *src++;
   }
 }
+
+int memset(char* dest, int value, int size){
+  
+  for(int i = 0; i < size; i++){
+    *dest++ = value;
+  }
+}
