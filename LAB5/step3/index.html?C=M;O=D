@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Index of /~cs460/samples/LAB5pre/step3</title>
+ </head>
+ <body>
+<h1>Index of /~cs460/samples/LAB5pre/step3</h1>
+<pre>      <a href="?C=N;O=A">Name</a>                    <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr>      <a href="/~cs460/samples/LAB5pre/">Parent Directory</a>                             -   
+      <a href="t.c">t.c</a>                     2020-03-05 07:03  3.4K  
+      <a href="wait.c">wait.c</a>                  2020-03-05 07:01  2.5K  
+      <a href="vid.c">vid.c</a>                   2020-03-05 07:01  7.2K  
+      <a href="uPtable.obj">uPtable.obj</a>             2020-03-05 07:01  1.1K  
+      <a href="type.h">type.h</a>                  2020-03-05 07:01  7.4K  
+      <a href="ts.s">ts.s</a>                    2020-03-05 07:01  6.8K  
+      <a href="t.ld">t.ld</a>                    2020-03-05 07:01  618   
+      <a href="t.bin">t.bin</a>                   2020-03-05 07:01   55K  
+      <a href="svc.obj">svc.obj</a>                 2020-03-05 07:01  2.6K  
+      <a href="svc.c">svc.c</a>                   2020-03-05 07:01  1.8K  
+      <a href="string.c">string.c</a>                2020-03-05 07:01  1.7K  
+      <a href="show">show</a>                    2020-03-05 07:01   48   
+      <a href="sdimage">sdimage</a>                 2020-03-05 07:01  1.0M  
+      <a href="sdc.h">sdc.h</a>                   2020-03-05 07:01  6.8K  
+      <a href="sdc.c">sdc.c</a>                   2020-03-05 07:01  5.3K  
+      <a href="queue.c">queue.c</a>                 2020-03-05 07:01  1.8K  
+      <a href="mk">mk</a>                      2020-03-05 07:01  379   
+      <a href="load.obj">load.obj</a>                2020-03-05 07:01  2.6K  
+      <a href="keymap2">keymap2</a>                 2020-03-05 07:01  1.2K  
+      <a href="keymap">keymap</a>                  2020-03-05 07:01  749   
+      <a href="kernel.c">kernel.c</a>                2020-03-05 07:01  5.2K  
+      <a href="kbd.c">kbd.c</a>                   2020-03-05 07:01  4.3K  
+      <a href="font0">font0</a>                   2020-03-05 07:01   12K  
+      <a href="exceptions.c">exceptions.c</a>            2020-03-05 07:01  1.2K  
+<hr></pre>
+</body></html>

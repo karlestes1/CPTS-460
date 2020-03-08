@@ -14,15 +14,15 @@ int main()
 
   mode = getcpsr();
   mode = mode & 0x1F;
-  printf("cpu mode=%x\n", mode);  // verify we are in USER mode
+  printf("CPU MODE=%x\n", mode);  // verify we are in USER mode
 
   pid = getpid();
   ppid = getppid();
   
   while(1){
-    printf("this is process %d in umode parent=%d\n", pid, ppid);
+    printf("THIS IS PROCESS %d IN UMODE PARENT=%d\n", pid, ppid);
     umenu();
-    printf("input a command : ");
+    printf("INPUT A COMMAND : ");
     ugets(line); 
     printf("\n"); 
  
