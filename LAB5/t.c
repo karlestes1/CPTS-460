@@ -33,72 +33,112 @@ int color;
 #include "sdc.c"
 //#include "load.c"
 
-void copy_vectors(void) {
-    extern u32 vectors_start;
-    extern u32 vectors_end;
-    u32 *vectors_src = &vectors_start;
-    u32 *vectors_dst = (u32 *)0;
-    while(vectors_src < &vectors_end)
-       *vectors_dst++ = *vectors_src++;
+void copy_vectors(void)
+{
+  extern u32 vectors_start;
+  extern u32 vectors_end;
+  u32 *vectors_src = &vectors_start;
+  u32 *vectors_dst = (u32 *)0;
+  while (vectors_src < &vectors_end)
+    *vectors_dst++ = *vectors_src++;
 }
 
 int mkPtable()
 {
   int i;
-  u32 *ut = (u32 *)0x400000;   // at 4MB
-  u32 entry = 0 | 0x412;       // 0x412;// AP=01 (Kmode R|W; Umode NO) domaian=0
+  u32 *ut = (u32 *)0x400000; // at 4MB
+  u32 entry = 0 | 0x412;     // 0x412;// AP=01 (Kmode R|W; Umode NO) domaian=0
 
-  for (i=0; i<4096; i++)       // clear 4k entries of table
+  for (i = 0; i < 4096; i++) // clear 4k entries of table
     ut[i] = 0;
-  
+
   // 128 MB RAM
-  for (i=0; i<128; i++){
+  for (i = 0; i < 128; i++)
+  {
     ut[i] = entry;
     entry += 0x100000;
   }
   // 2MB I/O space at 256 MB
-  entry = 256*0x100000 | 0x412;
-  for (i=256; i<258; i++){
-      ut[i] = entry;
-      entry += 0x100000;
+  entry = 256 * 0x100000 | 0x412;
+  for (i = 256; i < 258; i++)
+  {
+    ut[i] = entry;
+    entry += 0x100000;
   }
+  
 }
+
+int uPtable(PROC *p)
+{
+  int i;
+  
+  //u32 *ut = (u32 *)0x400000; // at 4MB
+  p->pgdir = (u32 *)(0x400000 + ((p->pid) * 0x4000));
+  
+  u32 entry = 0 | 0x412;     // 0x412;// AP=01 (Kmode R|W; Umode NO) domaian=0
+
+  for (i = 0; i < 4096; i++) // clear 4k entries of table
+    p->pgdir[i] = 0;
+
+  // 128 MB RAM
+  for (i = 0; i < 128; i++)
+  {
+    p->pgdir[i] = entry;
+    entry += 0x100000;
+  }
+  // 2MB I/O space at 256 MB
+  entry = 256 * 0x100000 | 0x412;
+  for (i = 256; i < 258; i++)
+  {
+    p->pgdir[i] = entry;
+    entry += 0x100000;
+  }
+  
+  u32 addr = (char *)(0x800000 + (p->pid-1)*0x100000);
+  p->pgdir[2048] = addr | 0xC32;
+  p->usp = (int *)VA(0x100000); //High end of 1MB VA
+  p->kstack[SSIZE-1] = VA(0); //Starting VA=0
+}
+
 
 int kprintf(char *fmt, ...);
 
 void IRQ_handler()
 {
-    int vicstatus, sicstatus;
-    int ustatus, kstatus;
+  int vicstatus, sicstatus;
+  int ustatus, kstatus;
 
-    // read VIC status register to find out which interrupt
-    vicstatus = VIC_STATUS;
-    sicstatus = SIC_STATUS;  
+  // read VIC status register to find out which interrupt
+  vicstatus = VIC_STATUS;
+  sicstatus = SIC_STATUS;
 
-    if (vicstatus & 0x80000000){
-      if (sicstatus & (1<<3)){
-          kbd_handler();
-       }
-       if (sicstatus & (1<<22)){
-	   sdc_handler();
-	 }
+  if (vicstatus & 0x80000000)
+  {
+    if (sicstatus & (1 << 3))
+    {
+      kbd_handler();
     }
+    if (sicstatus & (1 << 22))
+    {
+      sdc_handler();
+    }
+  }
 }
 
-void DATA_handler(void) 
+void DATA_handler(void)
 {
   u32 fault_status, fault_addr, domain, status;
   int spsr = get_spsr();
   int oldcolor = color;
   color = RED;
   kprintf("data_abort exception in ");
-  if ((spsr & 0x1F)==0x13)
+  if ((spsr & 0x1F) == 0x13)
     kprintf("SVC mode\n");
-  if ((spsr & 0x1F)==0x10)
+  if ((spsr & 0x1F) == 0x10)
     kprintf("USER mode\n");
 
   fault_status = get_fault_status();
-  fault_addr   = get_fault_addr();
+  fault_addr = get_fault_addr();
   // fault_status = 7654 3210
   //                doma status
   domain = (fault_status & 0xF0) >> 4;
@@ -108,40 +148,41 @@ void DATA_handler(void)
   color = oldcolor;
 }
 
-
 int main()
-{ 
-   int i,a;
-   char c;
-   char line[128]; 
-   
-   color = RED;
-   //   row = col = 0; 
-   //   BASE = 10;
-      
-   fbuf_init();
-   kprintf("                     Welcome to WANIX in Arm\n");
-   kprintf("LCD display initialized : fbuf = %x\n", fb);
-   color = CYAN;
-   kbd_init();
+{
+  int i, a;
+  char c;
+  char line[128];
 
-   VIC_INTENABLE |= (1<<31);    // SIC to VIC's IRQ31
-   // enable KBD and SDC IRQ 
-   SIC_ENSET   |= (1<<3);   // KBD int=3 on SIC
-   SIC_ENSET   |= (1<<22);  // SDC int=22 on SIC
+  color = RED;
+  //   row = col = 0;
+  //   BASE = 10;
 
-   sdc_init();
-   kernel_init();
+  fbuf_init();
+  kprintf("                     Welcome to WANIX in Arm\n");
+  kprintf("LCD display initialized : fbuf = %x\n", fb);
+  color = CYAN;
+  kbd_init();
 
-   unlock();
-   kfork("u1");
-   kfork("u2");
-   
-   color = CYAN;
-   kprintf("P0 switch to P1 : ");
+  VIC_INTENABLE |= (1 << 31); // SIC to VIC's IRQ31
+  // enable KBD and SDC IRQ
+  SIC_ENSET |= (1 << 3);  // KBD int=3 on SIC
+  SIC_ENSET |= (1 << 22); // SDC int=22 on SIC
 
-   while(1){
-     while(readyQueue==0);
-     tswitch();  // P0 switch to run a ready proc
-   }
+  sdc_init();
+  kernel_init();
+
+  unlock();
+  kfork("u1");
+  kfork("u2");
+
+  color = CYAN;
+  kprintf("P0 switch to P1 : ");
+
+  while (1)
+  {
+    while (readyQueue == 0)
+      ;
+    tswitch(); // P0 switch to run a ready proc
+  }
 }
