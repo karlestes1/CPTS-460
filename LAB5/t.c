@@ -29,11 +29,11 @@ int color;
 #include "wait.c"
 #include "uPtable.c"
 
-//#include "svc.c"
+#include "svc.c"
+#include "load.c"
+
 
 #include "sdc.c"
-//#include "load.c"
-
 void copy_vectors(void)
 {
   extern u32 vectors_start;

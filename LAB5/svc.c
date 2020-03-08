@@ -16,36 +16,54 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "type.h"
 extern PROC proc[], *running;
 extern int tswitch();
+extern int kprintf(char *, ...);
+extern int strcpy(char *dest, char *src);
 
 int ktswitch()
 {
-  // swtich process
+  tswitch();
 }
 
 int kgetpid()
 {
-  //return pid;
+  return running->pid;
 }
 
 int kgetppid()
 {
-  //return ppid;
+  return running->ppid;
 }
 
 char *pstatus[]={"FREE   ","READY  ","SLEEP  ","BLOCK  ","ZOMBIE", " RUN  "};
 int kps()
 {
-  // print process info
+  kprintf("\n\n***RUNNING PS***\n");
+  int i;
+  PROC *p;
+  kprintf("\nPID  PPID  status       name\n");
+  kprintf("---  ----  ------       ----\n");
+  for (i = 0; i < NPROC; i++)
+  {
+    p = &proc[i];
+    kprintf(" %d    %d    ", p->pid, p->ppid);
+    if (p == running)
+      kprintf("RUNNING    %s\n", p->name);
+    else
+      kprintf("%s    %s\n", pstatus[p->status], p->name);
+  }
 }
 
 int kchname(char *s)
 { 
-  // change process name  to string s
+  if(!s)
+    kprintf("No name provided\n");
+  else
+    strcpy(running->name, s);
 }
 
 int kgetPA()
 {
-  return Umode PA of process
+  return (u32) ((char *)(0x800000 + (running->pid-1)*0x100000));
 }
 
 

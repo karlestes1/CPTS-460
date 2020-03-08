@@ -2,7 +2,7 @@ typedef unsigned char   u8;
 typedef unsigned short  u16;
 typedef unsigned int    u32;
 
-#include "string.c"
+#include "string1.c"
 #include "uio.c"
 #include "ucode.c"
 
@@ -26,15 +26,15 @@ int main()
     ugets(line); 
     printf("\n"); 
  
-    if (strcmp(line, "GETPID")==0)
+    if (strcmp(line, "getpid")==0)
        ugetpid();
-    if (strcmp(line, "GETPPID")==0)
+    if (strcmp(line, "getppid")==0)
        ugetppid();
-    if (strcmp(line, "PS")==0)
+    if (strcmp(line, "ps")==0)
        ups();
-    if (strcmp(line, "CHNAME")==0)
+    if (strcmp(line, "chname")==0)
        uchname();
-    if (strcmp(line, "SWITCH")==0)
+    if (strcmp(line, "switch")==0)
        uswitch();
   }
 }
