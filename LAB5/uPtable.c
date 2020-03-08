@@ -4,6 +4,7 @@ int uPtable(PROC *p)
 {
   int i;
   
+  //Same format as mkptable from t.c
   //u32 *ut = (u32 *)0x400000; // at 4MB
   p->pgdir = (u32 *)(0x400000 + ((p->pid) * 0x4000));
   
@@ -26,6 +27,7 @@ int uPtable(PROC *p)
     entry += 0x100000;
   }
   
+  //User Mode code
   u32 addr = (char *)(0x800000 + (p->pid-1)*0x100000);
   p->pgdir[2048] = addr | 0xC32;
   p->usp = (int *)VA(0x100000); //High end of 1MB VA
