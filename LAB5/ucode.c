@@ -1,8 +1,8 @@
 int umenu()
 {
-  uprintf("-------------------------------\n");
-  uprintf("getpid getppid ps chname switch\n");
-  uprintf("-------------------------------\n");
+  uprintf("------------------------------------------------------------\n");
+  uprintf("getpid getppid ps chname switch sleep wakeup kfork wait exit\n");
+  uprintf("------------------------------------------------------------\n");
 }
 
 int getpid()
@@ -61,5 +61,49 @@ int uputc(char c)
 int getPA()
 {
   return syscall(92,0,0,0);
+}
+
+//The following code provided in Lab 5 instructions
+int usleep()
+{
+  int pid = getpid();
+  if (pid==1){
+    printf("P1 does not sleep in Umode\n");
+    return -1;
+  }
+  printf("proc %d go to sleep in kernel\n", pid);
+  return syscall(5, pid, 0, 0);
+}
+
+int uwakeup()
+{
+  int pid;
+  printf("enter a pid to wakeup: ");
+  pid = geti();
+  printf("pid=%d\n", pid);
+  return syscall(6,pid,0,0);
+}
+
+int ukfork()
+{
+  return syscall(7, "u1", 0, 0);
+}
+
+int uexit()
+{
+  int value;
+  printf("enter an exit value : ");
+  value = geti();
+  syscall(8, value, 0, 0);
+}
+
+int uwait()
+{
+  int pid, status;
+  pid = syscall(9, &status, 0, 0);
+  printf("pid = %d ", pid);
+  if (pid > 0)
+    printf("status = %x",status);
+  printf("\n");
 }
 

@@ -14,6 +14,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ********************************************************************/
 #include "type.h"
+#include "wait.c"
+
 extern PROC proc[], *running;
 extern int tswitch();
 extern int kprintf(char *, ...);
@@ -80,6 +82,11 @@ int svc_handler(int a, int b, int c, int d)
      case 2: r = kps();              break;
      case 3: r = kchname((char *)b); break;
      case 4: r = ktswitch();         break;
+     case 5: r = ksleep(b);           break;
+     case 6: r = kwakeup(b);          break;
+     case 7: r = kfork((char*)b);      break;
+     case 8: r = kexit(b);            break;
+     case 9: r = kwait(b);            break;
 
      case 90: r = kgetc();           break;
      case 91: r = kputc(b);          break;
