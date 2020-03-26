@@ -43,6 +43,7 @@ int atoi(char *s)
   }
   return v;
 }
+
 int geti()
 {
   char s[16];
