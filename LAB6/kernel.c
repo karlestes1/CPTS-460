@@ -37,8 +37,10 @@ int kernel_init()
     p->status = FREE;
     p->priority = 0;
     p->ppid = 0;
+    p->parent = 0;
     strcpy(p->name, pname[i]);
     p->next = p + 1;
+    p->pgdir = (int *)(0x600000 + p->pid * 0x4000);
   }
   proc[NPROC - 1].next = 0;
   freeList = &proc[0];
@@ -47,39 +49,76 @@ int kernel_init()
 
   running = dequeue(&freeList);
   running->status = READY;
-  running->pgdir = (int *)0x400000; // P0 pgdir at 4MB
 
   printList(freeList);
+
+  printf("building pgdirs at 6MB\n");
+  // create pgdir's for ALL PROCs at 6MB; MTABLE at 16KB in ts.s
+  MTABLE = (int *)0x4000;   // Mtable at 0x4000
+  mtable = (int *)0x600000; // mtables begin at 6MB
+  // Each pgdir MUST be at a 16K boundary ==>
+  // 1MB at 6MB has space for 64 pgdirs of 64 PROCs
+  for (i = 0; i < 64; i++)
+  {
+    // for 64 PROC mtables
+    for (j = 0; j < 2048; j++)
+    {
+      mtable[j] = MTABLE[j]; // copy low 2048 entries of MTABLE
+    }
+    mtable += 4096;
+    // advance mtable to next 16KB
+  }
+  mtable = (int *)0x600000;
+  // PROC mtables begin at 6MB
+  for (i = 0; i < 64; i++)
+  {
+    for (j = 2048; j < 4096; j++)
+    { // zero out high 2048 entries
+      mtable[j] = 0;
+    }
+    if (i) // exclude P0, page attribute=0xC3E:AP=11,domain=1
+      mtable[2048] = (0x800000 + (i - 1) * 0x100000) | 0xC12;
+    mtable += 4096;
+  }
 }
 
 int scheduler()
 {
   char line[8];
-  int pid; PROC *old=running;
+  int pid;
+  PROC *old = running;
   char *cp;
   kprintf("proc %d in scheduler\n", running->pid);
-  if (running->status==READY)
-     enqueue(&readyQueue, running);
+  if (running->status == READY && running->pid != 0)
+    enqueue(&readyQueue, running);
   printQ(readyQueue);
   running = dequeue(&readyQueue);
 
   kprintf("next running = %d\n", running->pid);
   pid = running->pid;
-  if (pid==1) color=WHITE;
-  if (pid==2) color=GREEN;
-  if (pid==3) color=CYAN;
-  if (pid==4) color=YELLOW;
-  if (pid==5) color=BLUE;
-  if (pid==6) color=PURPLE;   
-  if (pid==7) color=RED;
+  if (pid == 1)
+    color = WHITE;
+  if (pid == 2)
+    color = GREEN;
+  if (pid == 3)
+    color = CYAN;
+  if (pid == 4)
+    color = YELLOW;
+  if (pid == 5)
+    color = BLUE;
+  if (pid == 6)
+    color = PURPLE;
+  if (pid == 7)
+    color = RED;
   // must switch to new running's pgdir; possibly need also flush TLB
 
-  if (running != old){
+  if (running != old)
+  {
     printf("switch to proc %d pgdir at %x ", running->pid, running->pgdir);
     printf("pgdir[2048] = %x\n", running->pgdir[2048]);
     switchPgdir((u32)running->pgdir);
   }
-}  
+}
 
 /*************** kfork(filename)***************************
 kfork() a new proc p with filename as its UMODE image.
@@ -114,15 +153,17 @@ PROC *fork()
   //printf("pgdir[2048] = %x\n", p->pgdir[2048]);
 
   uPtable(p);
+  printf("forked new proc %d pgdir at %x ", p->pid, p->pgdir);
+  printf("pgdir[2048] = %x\n", p->pgdir[2048]);
 
   PA = (int)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
   CA = (int)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
 
   //printf("new proc %d pgdir at %x ", p->pid, p->pgdir);
   //printf("pgdir[2048] = %x\n", p->pgdir[2048]);
-  
+
   //printf("attempting mem copy\n");
-  memcpy(CA, PA, 0x100000);   
+  memcpy(CA, PA, 0x100000);
   //printf("assigned memory\n");                    // copy 1MB Umode image
   for (i = 1; i <= 14; i++)
   { // copy bottom 14 entries of kstack
@@ -133,7 +174,7 @@ PROC *fork()
   p->kstack[SSIZE - 15] = (int)goUmode; // child resumes to goUmode
   p->ksp = &(p->kstack[SSIZE - 28]);    // child saved ksp
   p->usp = running->usp;                // same usp as parent
-  p->cpsr = running->cpsr;            // same spsr as parent
+  p->cpsr = running->cpsr;              // same spsr as parent
   enqueue(&readyQueue, p);
   //printf("added to readyqueue");
   return p->pid;
@@ -169,7 +210,7 @@ int kexec(char *cmdline) // cmdline=VA in Uspace
   // assume cmdline len < 128
   kstrcpy((char *)usp, kline);
   p->usp = (int *)VA(0x100000 - 128);
-// fix syscall frame in kstack to return to VA=0 of new image
+  // fix syscall frame in kstack to return to VA=0 of new image
   for (i = 2; i < 14; i++) // clear Umode regs r1-r12
     p->kstack[SSIZE - i] = 0;
   p->kstack[SSIZE - 1] = (int)VA(0);
@@ -179,13 +220,14 @@ int kexec(char *cmdline) // cmdline=VA in Uspace
 
 PROC *kfork(char *filename)
 {
-  int i, r;
+  int i, r, upa, usp;;
   int pentry, *ptable;
   char *cp, *cq;
   char *addr;
   char line[8];
   int usize1, usize;
-  int *ustacktop, *usp;
+  int *ustacktop;
+  char* kline[128];
   u32 BA, Btop, Busp;
 
   PROC *p = dequeue(&freeList);
@@ -228,7 +270,7 @@ PROC *kfork(char *filename)
 
   // to go Umode, must set new PROC's Umode cpsr to IF=00 umode=b'10000'=0x10
 
-  p->cpsr = (int *)0x10; // previous mode was Umode
+  //p->cpsr = (int *)0x10; // previous mode was Umode
 
   // must load filename to Umode image area at 8MB+(pid-1)*1MB
 
@@ -238,13 +280,32 @@ PROC *kfork(char *filename)
     printf("load %s failed\n", filename);
     return 0;
   }
+
+  //Copy data onto the stack to print out during Main0
+
+  BA = p->pgdir[2048] & 0xFFF00000;
+  Btop = BA + 0x100000;
+  Busp = Btop - 32;
+
+  cp = (char *)Busp;
+  kstrcpy(cp, "program initialized");
+
+  p->kstack[SSIZE - 14] = (int)(0x80100000 - 32);
+
+  p->usp = (int *)(0x80100000 - 32);
+  p->upc = (int *)0x80000000; // need this in goUmode
+  p->cpsr = (int *)0x10;
+
+  p->kstack[SSIZE - 1] = (int)0x80000000;
+
+
   // must fix Umode ustack for it to goUmode: how did the PROC come to Kmode?
   // by swi # from VA=0 in Umode => at that time all CPU regs are 0
   // we are in Kmode, p's ustack is at its Uimage (8mb+(pid-1)*1Mb) high end
   // from PROC's point of view, it's a VA at 1MB (from its VA=0)
 
-  p->usp = (int *)VA(0x100000); // usp->high end of 1MB Umode area
-  p->kstack[SSIZE - 1] = VA(0); // upc = VA(0): to beginning of Umode area
+  //p->usp = (int *)VA(0x100000); // usp->high end of 1MB Umode area
+  //p->kstack[SSIZE - 1] = VA(0); // upc = VA(0): to beginning of Umode area
 
   // -|-----goUmode---------------------------------
   //  r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 ufp uip upc|
@@ -253,7 +314,7 @@ PROC *kfork(char *filename)
 
   enqueue(&readyQueue, p);
 
-  kprintf("proc %d kforked a child %d: ", running->pid, p->pid);
+  kprintf("proc %d kforked a child %d\n", running->pid, p->pid);
   printQ(readyQueue);
 
   return p;

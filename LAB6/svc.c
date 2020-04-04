@@ -24,6 +24,7 @@ extern int getmysp();
 
 int ktswitch()
 {
+  //printf()
   tswitch();
 }
 
@@ -88,7 +89,7 @@ int svc_handler(int a, int b, int c, int d)
      case 7: r = kexit(b);            break;
      //case 8: r = getmysp();     break;
      case 9: r = fork(); break;
-     case 10: r = kexec((char*)b);
+     case 10: r = kexec((char*)b); break;
      //case 5: r = ksleep(b);           break;
      //case 6: r = kwakeup(b);          break;
      //case 7: r = kfork((char*)b);      break;

@@ -23,6 +23,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .global switchPgdir
 .global get_fault_status, get_fault_addr, get_spsr
 
+/********************************************************
+mode:	USER: 10000  0x10
+	FIQ : 10001  0x11
+	IRQ : 10010  0x12
+	SVC : 10011  0x13
+        ABT : 10111  0x17
+	UND : 11011  0x1B
+	SYS : 11111  0x1F
+********************************************************/
+
 reset_handler:
   // set SVC stack to HIGH END of proc[0].kstack[]
   LDR r0, =proc      // r0 points to proc's
@@ -78,7 +88,7 @@ reset_handler:
   B .
 	
 .align 4
-Mtable:	    .word 0x400000    // at 4MB
+Mtable:	    .word 0x4000    // at 4MB
 mainstart:  .word main
 	
 .align 4
@@ -137,7 +147,7 @@ svc_entry:
    str r6, [r5, #16]  // save cpsr of Umode into PROC.cpsr
 	
 // change to SYS mode to access Umode usp, ulr
-   msr cpsr, #0xDF      // change cpsr in SYS mode (0x1F) with I-bit=1
+   msr cpsr, #0x1F      // change cpsr in SYS mode (0x1F) with I-bit=1
 
 // now in SYS mode, r13 same as User mode sp r14=user mode lr
    str sp, [r5, #8]   // save usp into proc.usp at offset 8
@@ -149,11 +159,11 @@ svc_entry:
    bl	svc_handler  // handle syscalls in svc_handler()
 
 goUmode:
-	
+
 // IRQ off
-  MRS r1, cpsr
-  ORR r1, r1, #0x80
-  MSR cpsr, r1
+ // MRS r1, cpsr
+  //ORR r1, r1, #0x80
+  //MSR cpsr, r1
 
   ldr r4, =running   // r4=&running
   ldr r5, [r4, #0]   // r5 -> PROC of running
@@ -162,19 +172,27 @@ goUmode:
   msr spsr, r6       // restore spsr = saved Umode cpsr
  	
 // change to SYS mode
-  msr cpsr, #0xDF    // change cpsr to SYS mode	
+  //msr cpsr, #0x1F    // change cpsr to SYS mode	
+
+  mrs r2, cpsr       // r2 = SVC mode cpsr
+   mov r3, r2         // save a copy in r3
+   orr r2, r2, #0x1F  // r0 = SYS mode
+   msr cpsr, r2       // change cpsr in SYS mode
 
 // now in SYS mode: restore usp from PROC.usp
    ldr sp, [r5, #8]   // restore usp from PROC.usp
 
-   msr cpsr, #0xD3    // back to SVC mode
+   //msr cpsr, #0x13    // back to SVC mode
+   msr cpsr, r3       // back to SVC mode
+
 	
 // replace saved r0 on stack with the return value r from svc_handler()
-   add sp, sp, #4     // pop saved r0 off stack
-   stmfd sp!,{r0}     // push r as the saved r0 to Umode
+   //add sp, sp, #4     // pop saved r0 off stack
+   //stmfd sp!,{r0}     // push r as the saved r0 to Umode
 
 // ^: pop regs from kstack BUT also copy spsr into cpsr ==> back to Umode
    ldmfd sp!, {r0-r12, pc}^ // ^ : pop kstack AND to previous mode
+
 
 int_off:          // SR = int_off()
   MRS r0, cpsr

@@ -63,7 +63,8 @@ void getInode()
 // must load filename to Umode image area at 8MB+(pid-1)*1MB
 int load(char *filename, PROC *p)
 {
-
+    int memLoaded = 0;
+    printf("loading: %s to proc=%d\n", filename, p->pid);
     getblock(2, buf1);
 
     // 1. WRITE YOUR CODE to get iblk = bg_inode_table block number
@@ -75,12 +76,33 @@ int load(char *filename, PROC *p)
     getInode();
 
     //ip for boot
+    printf("searching for bin... ");
     ino = search(ip, "bin");
-    getInode();
+    if(ino)
+    {
+        printf("bin found\n");
+        getInode();
+    }
+    else
+    {
+        printf("bin not found");
+        return;
+    }
+    
 
     //ip for mtx
+   printf("searching for %s... ", filename);
     ino = search(ip, filename);
-    getInode();
+    if(ino)
+    {
+        printf("%s found\n", filename);
+        getInode();
+    }
+    else
+    {
+        printf("%s not found", filename);
+        return;
+    }
 
     getblock((u16)ip->i_block[12], buf2);
 
@@ -89,10 +111,14 @@ int load(char *filename, PROC *p)
         
         if(ip->i_block[i]){
             getblock((u16)ip->i_block[i], (char *)(0x800000 + (p->pid-1)*0x100000 + i*BLK));
-            
+            //getblock((u16)ip->i_block[i], (char *)(0x800000 + (p->pid-1)*0x100000));
+
             printf("*");
+            memLoaded += BLK;
         }
     }
+
+    printf("  %d bytes loaded\n", memLoaded);
 
 
 

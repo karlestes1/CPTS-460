@@ -46,7 +46,7 @@ void copy_vectors(void) {
 int mkPtable()
 {
   int i;
-  u32 *ut = (u32 *)0x400000;   // at 4MB
+  u32 *ut = (u32 *)0x4000;   // at 4MB
   u32 entry = 0 | 0x412;       // 0x412;// AP=01 (Kmode R|W; Umode NO) domaian=0
 
   for (i=0; i<4096; i++)       // clear 4k entries of table

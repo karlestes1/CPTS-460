@@ -117,6 +117,8 @@ int sdc_init()
   do_command(7,  RCA, MMC_RSP_R1);  // transfer state: must use RCA
   do_command(16, 512, MMC_RSP_R1);  // set data block length
 
+  
+
   // set interrupt MASK0 registers bits = RxFULL(17)|TxEmpty(18)
   *(u32 *)(base + MASK0) = (1<<17)|(1<<18); 
 
