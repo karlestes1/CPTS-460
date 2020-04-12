@@ -1,0 +1,6 @@
+cd USER/
+sudo ./mksdc
+sudo ./mku u1
+sudo ./mku u2
+cd ..
+sudo ./mk

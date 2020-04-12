@@ -2,8 +2,12 @@
 
 int main(int argc, char *argv[])
 {
-  int i, pid, ppid, r;
+  int i, pid, ppid, r, mode;
   char line[64]; char uc;
+
+  mode = getcsr();
+  mode = mode & (0x0000001F);
+  printf("CPU mode=%x argc=%d\n", mode, argc);
 
   for (i=0; i<argc; i++){
     printf("argv[%d] = %s\n", i, argv[i]);

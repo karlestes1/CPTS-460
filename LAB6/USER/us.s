@@ -5,6 +5,7 @@
 
 entryPoint:	
 	bl main0
+   mov r0, #0
 	
 // if main0() ever retrun: syscall to exit(0)
 	
