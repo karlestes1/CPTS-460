@@ -105,7 +105,7 @@ int scheduler()
   if (pid == 4)
     color = YELLOW;
   if (pid == 5)
-    color = BLUE;
+    color = BLUE; 
   if (pid == 6)
     color = PURPLE;
   if (pid == 7)
@@ -156,8 +156,8 @@ PROC *fork()
   printf("forked new proc %d pgdir at %x ", p->pid, p->pgdir);
   printf("pgdir[2048] = %x\n", p->pgdir[2048]);
 
-  PA = (int)running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
-  CA = (int)p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
+  PA = running->pgdir[2048] & 0xFFFF0000; // parent Umode PA
+  CA = p->pgdir[2048] & 0xFFFF0000;       // child Umode PA
 
   //printf("new proc %d pgdir at %x ", p->pid, p->pgdir);
   //printf("pgdir[2048] = %x\n", p->pgdir[2048]);
@@ -165,16 +165,25 @@ PROC *fork()
   //printf("attempting mem copy\n");
   memcpy(CA, PA, 0x100000);
   //printf("assigned memory\n");                    // copy 1MB Umode image
+  
+  //Make sure both are in VA sections
+  p->usp = running->usp;
+  p->cpsr = running->cpsr;
+  
   for (i = 1; i <= 14; i++)
   { // copy bottom 14 entries of kstack
     p->kstack[SSIZE - i] = running->kstack[SSIZE - i];
   }
+
+  for (i = 15; i <=28; i++) //Zero out top entries
+    p->kstack[SSIZE - i] = 0;
+
+
+    // child return pid = 0
   p->kstack[SSIZE - 14] = 0;
-  // child return pid = 0
   p->kstack[SSIZE - 15] = (int)goUmode; // child resumes to goUmode
   p->ksp = &(p->kstack[SSIZE - 28]);    // child saved ksp
-  p->usp = running->usp;                // same usp as parent
-  p->cpsr = running->cpsr;              // same spsr as parent
+
   enqueue(&readyQueue, p);
   //printf("added to readyqueue");
   return p->pid;

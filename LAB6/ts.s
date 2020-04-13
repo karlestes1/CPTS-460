@@ -158,10 +158,14 @@ svc_entry:
 
    bl	svc_handler  // handle syscalls in svc_handler()
 
+   // replace saved r0 on stack with the return value r from svc_handler()  
+  add sp, sp, #4     // pop saved r0 off stack
+  stmfd sp!,{r0}     // push r as the saved r0 to Umode 
+
 goUmode:
 
 // IRQ off
- // MRS r1, cpsr
+  //MRS r1, cpsr
   //ORR r1, r1, #0x80
   //MSR cpsr, r1
 
@@ -186,12 +190,13 @@ goUmode:
    msr cpsr, r3       // back to SVC mode
 
 	
-// replace saved r0 on stack with the return value r from svc_handler()
-   //add sp, sp, #4     // pop saved r0 off stack
-   //stmfd sp!,{r0}     // push r as the saved r0 to Umode
+
+
 
 // ^: pop regs from kstack BUT also copy spsr into cpsr ==> back to Umode
    ldmfd sp!, {r0-r12, pc}^ // ^ : pop kstack AND to previous mode
+
+   
 
 
 int_off:          // SR = int_off()
@@ -250,7 +255,7 @@ switchPgdir:	// switch pgdir to new PROC's pgdir; passed in r0
   mrc p15, 0, r2, c2, c0, 0
 
   // set domain: all 01=client(check permission) 11=manager(no check)
-  mov r0, #0x5                // 0101 for CLIENT mode: check permission
+  mov r0, #0x               // 0101 for CLIENT mode: check permission
   mcr p15, 0, r0, c3, c0, 0
   mov pc, lr                  // return
 	
