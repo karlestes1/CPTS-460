@@ -24,8 +24,9 @@ extern int getmysp();
 
 int ktswitch()
 {
-  //printf()
+  printf("Switching from PROC: %d\n", running->pid);
   tswitch();
+  printf("Swtiched to PROC: %d\n", running->pid);
 }
 
 int kgetpid()
