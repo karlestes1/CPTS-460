@@ -14,11 +14,13 @@ ___
 <br>
 
 ### Textbooks
-<img alt="Embedded and Real-Time Operating Systems" align="left" height="64" width="52" src="https://eecs.wsu.edu/~cs460/cs560/embedOS.jpg" />[embeddedOSBook]
+[<img alt="Embedded and Real-Time Operating Systems" align="left" height="64" width="52" src="https://eecs.wsu.edu/~cs460/cs560/embedOS.jpg" />][embeddedOSBook]
 Embedded and Real-Time Operating Systems by K.C. Wang
-<br>
+<br />
+<br />
+<br />
 
-<img alt="Design and Implementation of the MTX Operating System" align="left" height="64" width="52" src="https://images-na.ssl-images-amazon.com/images/I/41yWJMfesOL._SX330_BO1,204,203,200_.jpg" />[MTXOSBook]
+[<img alt="Design and Implementation of the MTX Operating System" align="left" height="64" width="52" src="https://images-na.ssl-images-amazon.com/images/I/41yWJMfesOL._SX330_BO1,204,203,200_.jpg" />][MTXOSBook]
 Design and Implementation of the MTX Operating System by K.C. Wang
 <br>
 
