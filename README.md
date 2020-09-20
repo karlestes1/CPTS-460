@@ -39,13 +39,10 @@ ___
 ### Lab 1
 ###### MTX Operating System Booter
 **Lab 1.1:** Pre-lab work to learn how to generate a binary executable, dump it to a (virtual) disk, and boot up the disk using the QEMU emulator  
-<br />
 
 **Lab1.2:** Addition of C-code to get root inode, read in a data block of the root DIR, and print all the filenames contained within the root directory (/)  
-<br />
 
 **Lab1.3:** Modification of the code from Lab1.2 to get the INODE of /boot/mtx and to now boot up the MTX operating system from the mtximage virtual disk. The total boot program had to be less than 1KB when compiled to fit in the boot segment of the disk  
-<br />
 
 ### Lab 2
 ###### UART Terminals
