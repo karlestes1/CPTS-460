@@ -44,6 +44,7 @@ ___
 
 **Lab1.3:** Modification of the code from Lab1.2 to get the INODE of /boot/mtx and to now boot up the MTX operating system from the mtximage virtual disk. The total boot program had to be less than 1KB when compiled to fit in the boot segment of the disk  
 
+___
 ### Lab 2
 ###### UART Terminals
 **Lab 2.0:** Initial assembly file downloads  
@@ -52,21 +53,25 @@ ___
 
 **Lab 2.2:** Displays a .bmp file at 640x480 resolution in 4 different zoom levels while reading input from the UART terminal
 
+___
 ### Lab 3
 ###### Binary Tree PROC Structure
 **Lab3.1:** Implements parent-child process relationships as a binary tree and implements sleep(), wakeup(), and wait() functions in regards to processes
 
-
+___
 ### Lab 4
 ##### The instructions for lab 4 could not be found. Should I find them, I shall update this section
 
+___
 ### Lab 5
 ###### Forking and Execution of Processes
 A modification of provided code to support a Umode image that is 4MB in size with the adition of vfork() and exec() functions to fork and execute processes
 
+___
 ### Lab 6
 ##### The instructions for lab 4 could not be found. Should I find them, I shall update this section
 
+___
 ### Midterm Project
 **Part 1:** Focused on implemented process management with a queue  
 
@@ -74,5 +79,6 @@ A modification of provided code to support a Umode image that is 4MB in size wit
 
 **Part 3:** Answering a series of questions related to data_abort faults and address mapping from pTables  
 
+___
 ### Final Project
 The final project consisted of creating the init, login, and sh programs for the MTX operating system. It allows for logins across multiple terminals, can handlews a series of user commands, and it allows for chained commands within the shell which means redirected i/o streams.
